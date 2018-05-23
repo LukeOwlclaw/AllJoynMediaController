@@ -1,0 +1,16 @@
+<Dictionary xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="CustomDictionary.xsd">
+  <Words>
+    <Recognized>
+      <Word>RSSI</Word>    
+  </Recognized>
+    <Compound>
+    </Compound>
+  </Words>
+  <Acronyms>
+    <CasingExceptions>
+      <!-- Casing exceptions only allow capitalized acronyms, e.g. UTF8. To allow camel- and lower-case, add as recognized word, e.g. RSSI -->
+      <Acronym>UTF</Acronym>      
+    </CasingExceptions>
+  </Acronyms>
+</Dictionary>
