@@ -1,0 +1,44 @@
+﻿<UserControl
+    x:Class="VariableItemListView.VariableItemListView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:VariableItemListView"
+    xmlns:models="using:VariableItemListView.Models"
+    xmlns:support="using:VariableItemListView.Support"
+    xmlns:converters="using:VariableItemListView.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400"
+    x:Name="VariableListViewControl"
+    >
+    <UserControl.Resources>
+        <DataTemplate x:Key="StringItemTemplate">
+            <!--<TextBlock Text="{Binding FileName}"/>-->
+            <TextBlock Text="TEXT1"/>
+        </DataTemplate>
+
+        <DataTemplate x:Key="IntItemTemplate">
+            <TextBlock Text="TEXT2"/>
+        </DataTemplate>
+
+        <support:VariableTypeTemplateSelector x:Key="VariableTypeTemplateSelector" StringItemTemplate="{StaticResource StringItemTemplate}" IntItemTemplate="{StaticResource IntItemTemplate}"/>
+
+        <converters:VisibleWhenZeroConverter x:Key="VisibleWhenZeroConverter"  />
+        
+    </UserControl.Resources>
+    <Border BorderBrush="{Binding BorderBrush, ElementName=VariableListViewControl}"
+            BorderThickness="{Binding BorderThickness, ElementName=VariableListViewControl}">
+        <Grid>
+            <ListView ItemsSource="{x:Bind VM.Items}" ItemTemplateSelector="{StaticResource VariableTypeTemplateSelector}"
+                  x:Name="MyList">
+                <ListView.Header>
+                    <TextBlock Visibility="{x:Bind VM.Items.Count, Mode=OneWay, Converter={StaticResource VisibleWhenZeroConverter}}">
+                <Run Text="There are no items." />
+                    </TextBlock>
+                </ListView.Header>
+            </ListView>
+        </Grid>
+    </Border>
+</UserControl>

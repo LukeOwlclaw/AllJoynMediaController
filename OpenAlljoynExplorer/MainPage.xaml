@@ -1,0 +1,36 @@
+﻿<Page
+    x:Class="OpenAlljoynExplorer.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:OpenAlljoynExplorer"
+    xmlns:models="using:OpenAlljoynExplorer.Models"
+    xmlns:variableItemListView="using:VariableItemListView"
+    xmlns:support="using:OpenAlljoynExplorer.Support"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    x:Name="root2">
+
+    <Page.Resources>
+        <DataTemplate x:Key="StringItemTemplate">
+            <!--<TextBlock Text="{Binding FileName}"/>-->
+            <TextBlock Text="TEXT1"/>
+        </DataTemplate>
+
+        <DataTemplate x:Key="IntItemTemplate">
+            <TextBlock Text="TEXT2"/>
+        </DataTemplate>
+
+        
+
+    </Page.Resources>
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <StackPanel>
+        <Button Click="Button_Click">Add</Button>
+            <variableItemListView:VariableItemListView VM="{x:Bind VM.VariableListViewModel}" BorderBrush="LightGray" BorderThickness="3" Margin="10">
+            
+        </variableItemListView:VariableItemListView>
+        </StackPanel>
+    </Grid>
+</Page>

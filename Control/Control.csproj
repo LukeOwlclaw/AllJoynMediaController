@@ -37,13 +37,40 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <Target Name="_ValidatePlatformArch" BeforeTargets="Build">
+    <Error Condition="'$(TargetExt)' == '.exe' AND '$(Platform)' != 'x86' AND '$(Platform)' != 'x64' AND '$(Platform)' != 'ARM'" Text="Unsupported platform value '$(Platform)'. The $(MSBuildThisFileName) package requires the Platform to be set to x86, x64, or ARM for executable applications." />
+  </Target>
+  <PropertyGroup>
+    <device-Platform Condition="'$(Platform)' == 'Win32'">x86</device-Platform>
+    <device-Platform Condition="'$(Platform)' != 'Win32'">$(Platform)</device-Platform>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>..\RuleSet.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DeviceProviders, Version=255.255.255.255, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\uap10.0\DeviceProviders.winmd</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Runtime.WindowsRuntime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETCore\v4.5\System.Runtime.WindowsRuntime.dll</HintPath>
-    </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -53,8 +80,29 @@
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
-    <Reference Include="Windows">
-      <HintPath>C:\Program Files (x86)\Windows Kits\10\UnionMetadata\10.0.16299.0\Windows.winmd</HintPath>
+    <Reference Include="Windows.ApplicationModel.Calls.CallsVoipContract">
+      <HintPath>C:\Program Files (x86)\Windows Kits\10\References\Windows.ApplicationModel.Calls.CallsVoipContract\1.0.0.0\Windows.ApplicationModel.Calls.CallsVoipContract.winmd</HintPath>
+    </Reference>
+    <Reference Include="Windows.ApplicationModel.SocialInfo.SocialInfoContract">
+      <HintPath>C:\Program Files (x86)\Windows Kits\10\References\Windows.ApplicationModel.SocialInfo.SocialInfoContract\1.0.0.0\Windows.ApplicationModel.SocialInfo.SocialInfoContract.winmd</HintPath>
+    </Reference>
+    <Reference Include="Windows.Devices.DevicesLowLevelContract">
+      <HintPath>C:\Program Files (x86)\Windows Kits\10\References\Windows.Devices.DevicesLowLevelContract\2.0.0.0\Windows.Devices.DevicesLowLevelContract.winmd</HintPath>
+    </Reference>
+    <Reference Include="Windows.Devices.Printers.PrintersContract">
+      <HintPath>C:\Program Files (x86)\Windows Kits\10\References\Windows.Devices.Printers.PrintersContract\1.0.0.0\Windows.Devices.Printers.PrintersContract.winmd</HintPath>
+    </Reference>
+    <Reference Include="Windows.Foundation.FoundationContract">
+      <HintPath>C:\Program Files (x86)\Windows Kits\10\References\Windows.Foundation.FoundationContract\2.0.0.0\Windows.Foundation.FoundationContract.winmd</HintPath>
+    </Reference>
+    <Reference Include="Windows.Foundation.UniversalApiContract">
+      <HintPath>C:\Program Files (x86)\Windows Kits\10\References\Windows.Foundation.UniversalApiContract\2.0.0.0\Windows.Foundation.UniversalApiContract.winmd</HintPath>
+    </Reference>
+    <Reference Include="Windows.System.Profile.ProfileHardwareTokenContract">
+      <HintPath>C:\Program Files (x86)\Windows Kits\10\References\Windows.System.Profile.ProfileHardwareTokenContract\1.0.0.0\Windows.System.Profile.ProfileHardwareTokenContract.winmd</HintPath>
+    </Reference>
+    <Reference Include="Windows.System.Profile.ProfileSharedModeContract">
+      <HintPath>C:\Program Files (x86)\Windows Kits\10\References\Windows.System.Profile.ProfileSharedModeContract\1.0.0.0\Windows.System.Profile.ProfileSharedModeContract.winmd</HintPath>
     </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
@@ -73,6 +121,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="BusinessObject.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
