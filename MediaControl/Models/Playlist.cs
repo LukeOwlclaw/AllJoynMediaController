@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using DeviceProviders;
 
-namespace ControlApp.Models
+namespace MediaControl.Models
 {
     /// <summary>
     /// A media playlist

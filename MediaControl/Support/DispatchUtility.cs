@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Reflection;
 
-namespace ControlApp.Support
+namespace MediaControl.Support
 {
     
 

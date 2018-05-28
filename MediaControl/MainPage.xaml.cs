@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Reflection;
-using ControlApp.Support;
+using MediaControl.Support;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -17,12 +17,12 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using DeviceProviders;
-using ControlApp.Models;
+using MediaControl.Models;
 using System.Runtime.Serialization;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
-namespace ControlApp
+namespace MediaControl
 {
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.

@@ -4,7 +4,7 @@ using System.Linq;
 using DeviceProviders;
 using System.Collections.ObjectModel;
 
-namespace ControlApp.Models
+namespace MediaControl.Models
 {
     /// <summary>
     /// A media entry item

@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ControlApp.Support
+namespace MediaControl.Support
 {
     public static class AsyncHelpers
     {
