@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Data;
 
-namespace VariableItemListView.Converters
+namespace Shared.Converters
 {
     // MarkupExtension for converter does not work for UWP.
     //public class VisibleWhenZeroConverter : ConverterMarkupExtension<VisibleWhenZeroConverter>

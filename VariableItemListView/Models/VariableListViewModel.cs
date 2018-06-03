@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Shared.Support;
 
 namespace VariableItemListView.Models
 {
@@ -12,14 +13,6 @@ namespace VariableItemListView.Models
         public VariableListViewModel()
         {
             Items = new ObservableCollectionThreadSafe<VariableType>();
-            bool designTime = Windows.ApplicationModel.DesignMode.DesignModeEnabled;
-            if (designTime)
-            {
-                var i = new VariableType(1);
-                Items.Add(i);
-                i = new VariableType(2);
-                Items.Add(i);
-            }
         }
 
         public ObservableCollectionThreadSafe<VariableType> Items {

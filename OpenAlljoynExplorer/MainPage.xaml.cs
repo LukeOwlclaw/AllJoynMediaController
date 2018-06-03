@@ -1,4 +1,5 @@
-﻿using OpenAlljoynExplorer.Models;
+﻿using OpenAlljoynExplorer.Controllers;
+using OpenAlljoynExplorer.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -25,6 +26,8 @@ namespace OpenAlljoynExplorer
     public sealed partial class MainPage : Page
     {
         public MainPageModel VM { get; set; }
+        public MainPageController Controller { get; set; }
+
 
         //public List<VariableType> Files { get; set; }
         public MainPage()
@@ -34,6 +37,13 @@ namespace OpenAlljoynExplorer
             //Files.Add(new VariableType(1));
             //Files.Add(new VariableType(2));
             this.InitializeComponent();
+            Loaded += MainPage_Loaded;
+        }
+
+        private void MainPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            Controller = new MainPageController(VM);
+            Controller.Start();
         }
 
         private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)

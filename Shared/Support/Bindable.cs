@@ -6,8 +6,9 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.UI.Core;
 
-namespace VariableItemListView.Support
+namespace Shared.Support
 {
     public class Bindable : INotifyPropertyChanged
     {
@@ -61,6 +62,11 @@ namespace VariableItemListView.Support
 
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
+            //await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.High,
+            //() =>
+            //{
+            //    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            //});
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 

@@ -4,33 +4,56 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:OpenAlljoynExplorer"
     xmlns:models="using:OpenAlljoynExplorer.Models"
+    xmlns:converters="using:Shared.Converters"
+    xmlns:controls="using:Shared.Controls"
     xmlns:variableItemListView="using:VariableItemListView"
     xmlns:support="using:OpenAlljoynExplorer.Support"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     x:Name="root2">
-
     <Page.Resources>
-        <DataTemplate x:Key="StringItemTemplate">
-            <!--<TextBlock Text="{Binding FileName}"/>-->
-            <TextBlock Text="TEXT1"/>
-        </DataTemplate>
-
-        <DataTemplate x:Key="IntItemTemplate">
-            <TextBlock Text="TEXT2"/>
-        </DataTemplate>
-
-        
-
+        <converters:VisibleWhenZeroConverter x:Key="VisibleWhenZeroConverter"  />
+        <converters:VisibleWhenNotNullConverter x:Key="VisibleWhenNotNullConverter"  />
     </Page.Resources>
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <StackPanel>
-        <Button Click="Button_Click">Add</Button>
-            <variableItemListView:VariableItemListView VM="{x:Bind VM.VariableListViewModel}" BorderBrush="LightGray" BorderThickness="3" Margin="10">
-            
-        </variableItemListView:VariableItemListView>
+            <Button Click="Button_Click">Add</Button>
+            <variableItemListView:VariableItemListView variableItemListView:VM="{x:Bind VM.VariableListViewModel}" BorderBrush="LightGray" BorderThickness="3" Margin="10">
+            </variableItemListView:VariableItemListView>
+            <ListView  ItemsSource="{x:Bind VM.AllJoynServices}" BorderBrush="LightGray" BorderThickness="3" Margin="0">
+                <ListView.Header>
+                    <TextBlock Visibility="{x:Bind VM.AllJoynServices.Count, Mode=OneWay, Converter={StaticResource VisibleWhenZeroConverter}}">
+                <Run Text="There are no items." />
+                    </TextBlock>
+                </ListView.Header>
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <controls:WrapPanel />
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="models:AllJoynService">
+                        <Grid HorizontalAlignment="Left" MinWidth="200" Height="200">
+                            <Border BorderThickness="1" BorderBrush="Black" CornerRadius="10" MinWidth="200">
+                                <StackPanel Orientation="Horizontal">
+                                    <Border Visibility="{x:Bind Icon, Converter={StaticResource VisibleWhenNotNullConverter}, Mode=OneWay}" Background="LightBlue" BorderBrush="LightGray" BorderThickness="1" Padding="5" CornerRadius="10" Margin="10,10,0,10">
+                                        <Image Source="{x:Bind Icon, Mode=OneWay}" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <Border Margin="0,0,10,0"></Border>
+                                    <StackPanel Orientation="Vertical" MinWidth="100" Margin="0,0,10,0"  >
+                                        <TextBlock Text="{x:Bind Service.AboutData.DeviceName}" />
+                                        <TextBlock Text="{x:Bind Service.AboutData.AppName}" />
+                                        <TextBlock Text="{x:Bind Service.AboutData.Manufacturer}" />
+                                        <TextBlock Text="{x:Bind Service.AboutData.ModelNumber}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
         </StackPanel>
     </Grid>
 </Page>

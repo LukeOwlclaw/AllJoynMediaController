@@ -20,7 +20,18 @@ namespace VariableItemListView
 {
     public sealed partial class VariableItemListView : UserControl
     {
-        public VariableListViewModel VM { get; set; }
+        
+        public VariableListViewModel VM
+        {
+            get { return (VariableListViewModel)GetValue(VMProperty); }
+            set { SetValue(VMProperty, value); }
+        }
+
+        
+        public static readonly DependencyProperty VMProperty =
+            DependencyProperty.Register(nameof(VM), typeof(VariableListViewModel), typeof(VariableItemListView), null);
+
+        //public VariableListViewModel VM { get; set; }
 
         public VariableItemListView()
         {

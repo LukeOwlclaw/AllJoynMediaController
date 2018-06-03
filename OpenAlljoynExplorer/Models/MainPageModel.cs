@@ -1,4 +1,4 @@
-﻿using OpenAlljoynExplorer.Support;
+﻿using Shared.Support;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,15 +9,21 @@ using VariableItemListView.Support;
 
 namespace OpenAlljoynExplorer.Models
 {
-    public class MainPageModel : VariableItemListView.Support.Bindable
+    public class MainPageModel : Bindable
     {
         public MainPageModel()
         {
             VariableListViewModel = new VariableListViewModel();
+            AllJoynServices = new ObservableCollectionThreadSafe<AllJoynService>();            
+        }
+
+        public ObservableCollectionThreadSafe<AllJoynService> AllJoynServices
+        {
+            get { return Get<ObservableCollectionThreadSafe<AllJoynService>>(); }
+            set { Set(value); }
         }
 
         public VariableListViewModel VariableListViewModel
-
         {
             get { return Get<VariableListViewModel>(); }
             set { Set(value); }
