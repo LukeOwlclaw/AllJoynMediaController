@@ -47,6 +47,7 @@
                                         <TextBlock Text="{x:Bind Service.AboutData.AppName}" />
                                         <TextBlock Text="{x:Bind Service.AboutData.Manufacturer}" />
                                         <TextBlock Text="{x:Bind Service.AboutData.ModelNumber}" />
+                                        <variableItemListView:VariableItemListView VM="{x:Bind VariableListViewModel}" BorderBrush="LightGray" BorderThickness="3" Margin="10" />
                                     </StackPanel>
                                 </StackPanel>
                             </Border>

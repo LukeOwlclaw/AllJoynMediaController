@@ -15,7 +15,8 @@ namespace VariableItemListView.Support
         private object syncLock;
         public ObservableCollectionThreadSafe()
         {
-            if (!CoreWindow.GetForCurrentThread().Dispatcher.HasThreadAccess)
+            var currentCoreWindow = CoreWindow.GetForCurrentThread();
+            if (currentCoreWindow != null && !currentCoreWindow.Dispatcher.HasThreadAccess)
             {
                 throw new Exception($"{nameof(ObservableCollectionThreadSafe<T>)} must be created on UI thread!");
                 //otherwise later Add, Remove, ... operations will still cause:

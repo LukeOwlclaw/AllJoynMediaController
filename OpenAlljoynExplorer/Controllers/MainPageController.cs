@@ -29,14 +29,19 @@ namespace OpenAlljoynExplorer.Controllers
 
         private async void ServiceJoined(IProvider sender, ServiceJoinedEventArgs args)
         {
-            var service = new AllJoynService(args.Service);
 
-            Dispatcher.Dispatch(() =>
+            AllJoynService service = null;
+            await Dispatcher.Dispatch(() =>
             {
+                service = new AllJoynService(args.Service);
                 VM.AllJoynServices.Add(service);
+                var runAsync = service.ReadIconAsync();
+                runAsync = service.ReadAllAsync();
+
             });
 
-            await service.ReadIconAsync();
+            //var runAsync = service.ReadIconAsync();
+            //runAsync = service.ReadAllAsync();
             
 
         }
