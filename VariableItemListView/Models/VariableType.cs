@@ -8,14 +8,11 @@ namespace VariableItemListView.Models
 {
     public class VariableType
     {
-        public int v { get; set; }
         public object Value { get; set; }
-        public string Name { get; set; }
+        public string Name { get { return PropertyPath?.LastOrDefault(); } }
+        public IEnumerable<string> PropertyPath { get; set; }
+        public string PropertyPathString { get { return PropertyPath == null ? null : string.Join(".", PropertyPath);  } }
 
-        public VariableType() { }
-        public VariableType(int v)
-        {
-            this.v = v;
-        }
+        public VariableType() { }        
     }
 }

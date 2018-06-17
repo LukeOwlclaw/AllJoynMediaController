@@ -45,18 +45,5 @@ namespace OpenAlljoynExplorer
             Controller = new MainPageController(VM);
             Controller.Start();
         }
-
-        private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            
-            //access datacontext.Items and add  some!
-        }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            VM.VariableListViewModel.Items.Add(new VariableType(2));
-            VM.VariableListViewModel.Items.Add(new VariableType(1));
-            //VM.Items.Add(new VariableType(2));
-        }
     }
 }

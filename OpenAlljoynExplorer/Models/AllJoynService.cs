@@ -36,7 +36,6 @@ namespace OpenAlljoynExplorer.Models
 
         internal async Task ReadIconAsync()
         {
-            VariableListViewModel.Items.Add(new VariableType(1));
             var icon = await Service.AboutData.GetIconAsync();
             var iconBytes = icon?.Content?.ToArray();
             if (iconBytes != null)

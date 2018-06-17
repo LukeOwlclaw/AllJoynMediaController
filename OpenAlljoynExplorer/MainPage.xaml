@@ -18,43 +18,57 @@
     </Page.Resources>
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <StackPanel>
-            <Button Click="Button_Click">Add</Button>
-            <variableItemListView:VariableItemListView variableItemListView:VM="{x:Bind VM.VariableListViewModel}" BorderBrush="LightGray" BorderThickness="3" Margin="10">
-            </variableItemListView:VariableItemListView>
-            <ListView  ItemsSource="{x:Bind VM.AllJoynServices}" BorderBrush="LightGray" BorderThickness="3" Margin="0">
-                <ListView.Header>
-                    <TextBlock Visibility="{x:Bind VM.AllJoynServices.Count, Mode=OneWay, Converter={StaticResource VisibleWhenZeroConverter}}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <ListView  Grid.Row="1" ItemsSource="{x:Bind VM.AllJoynServices}" BorderBrush="LightGray" BorderThickness="3" Margin="0" ScrollViewer.VerticalScrollBarVisibility="Visible">
+            <ListView.Header>
+                <TextBlock Visibility="{x:Bind VM.AllJoynServices.Count, Mode=OneWay, Converter={StaticResource VisibleWhenZeroConverter}}">
                 <Run Text="There are no items." />
-                    </TextBlock>
-                </ListView.Header>
-                <ListView.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <controls:WrapPanel />
-                    </ItemsPanelTemplate>
-                </ListView.ItemsPanel>
-                <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="models:AllJoynService">
-                        <Grid HorizontalAlignment="Left" MinWidth="200" Height="200">
-                            <Border BorderThickness="1" BorderBrush="Black" CornerRadius="10" MinWidth="200">
-                                <StackPanel Orientation="Horizontal">
-                                    <Border Visibility="{x:Bind Icon, Converter={StaticResource VisibleWhenNotNullConverter}, Mode=OneWay}" Background="LightBlue" BorderBrush="LightGray" BorderThickness="1" Padding="5" CornerRadius="10" Margin="10,10,0,10">
-                                        <Image Source="{x:Bind Icon, Mode=OneWay}" VerticalAlignment="Center"/>
-                                    </Border>
-                                    <Border Margin="0,0,10,0"></Border>
-                                    <StackPanel Orientation="Vertical" MinWidth="100" Margin="0,0,10,0"  >
-                                        <TextBlock Text="{x:Bind Service.AboutData.DeviceName}" />
-                                        <TextBlock Text="{x:Bind Service.AboutData.AppName}" />
-                                        <TextBlock Text="{x:Bind Service.AboutData.Manufacturer}" />
-                                        <TextBlock Text="{x:Bind Service.AboutData.ModelNumber}" />
-                                        <variableItemListView:VariableItemListView VM="{x:Bind VariableListViewModel}" BorderBrush="LightGray" BorderThickness="3" Margin="10" />
-                                    </StackPanel>
-                                </StackPanel>
+                </TextBlock>
+            </ListView.Header>
+            <ListView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <controls:WrapPanel />
+                </ItemsPanelTemplate>
+            </ListView.ItemsPanel>
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="models:AllJoynService">
+
+                    <Border BorderThickness="0" BorderBrush="Black" CornerRadius="10" MinWidth="200">
+                        <Grid HorizontalAlignment="Left" MinWidth="200" MinHeight="200" MaxHeight="600" ScrollViewer.VerticalScrollBarVisibility="Visible">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"></RowDefinition>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                <ColumnDefinition Width="*"></ColumnDefinition>
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="1" Visibility="{x:Bind Icon, Converter={StaticResource VisibleWhenNotNullConverter}, Mode=OneWay}" BorderBrush="LightGray" BorderThickness="1" Padding="5" CornerRadius="10" Margin="10,10,0,10" Opacity="20">
+                                <Image Source="{x:Bind Icon, Mode=OneWay}" VerticalAlignment="Center"/>
                             </Border>
+                            <Border Grid.Column="1" Margin="0,0,10,0"></Border>
+                            <Grid Grid.Column="1" >
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"></RowDefinition>
+                                    <RowDefinition Height="Auto"></RowDefinition>
+                                    <RowDefinition Height="Auto"></RowDefinition>
+                                    <RowDefinition Height="*"></RowDefinition>
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0" Text="{x:Bind Service.AboutData.DeviceName}" />
+                                <TextBlock Grid.Row="1" Text="{x:Bind Service.AboutData.AppName}" />
+                                <TextBlock Grid.Row="2" Text="{x:Bind Service.AboutData.Manufacturer}" />
+                                <variableItemListView:VariableItemListView Grid.Row="4" VM="{x:Bind VariableListViewModel}" BorderBrush="LightGray" BorderThickness="3" Margin="10" />
+                            </Grid>
                         </Grid>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-        </StackPanel>
+                    </Border>
+
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
     </Grid>
 </Page>

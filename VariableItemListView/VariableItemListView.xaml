@@ -14,19 +14,30 @@
     x:Name="VariableListViewControl"
     >
     <UserControl.Resources>
-        <DataTemplate x:Key="StringItemTemplate">
-            <!--<TextBlock Text="{Binding FileName}"/>-->
-            <TextBlock Text="TEXT1"/>
+        <DataTemplate x:Key="BaseItemTemplate" x:DataType="models:VariableType">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="{x:Bind PropertyPathString}" />
+                <TextBlock Grid.Column="1"  Text=":" Margin="0,0,10,0" />
+                <TextBox HorizontalAlignment="Stretch" Grid.Column="2" Text="{x:Bind Value}" BorderThickness="0" Margin="0" Padding="0" TextWrapping="NoWrap" IsReadOnly="True" AcceptsReturn="True" Height="7"  />
+            </Grid>
+        </DataTemplate>
+        <DataTemplate x:Key="StringItemTemplate" x:DataType="models:VariableType">
+            <ContentPresenter Content="{Binding}" ContentTemplate="{StaticResource BaseItemTemplate}"/>
         </DataTemplate>
 
-        <DataTemplate x:Key="IntItemTemplate">
-            <TextBlock Text="TEXT2"/>
+        <DataTemplate x:Key="IntItemTemplate" x:DataType="models:VariableType">
+            <ContentPresenter Content="{Binding}" ContentTemplate="{StaticResource BaseItemTemplate}"/>
         </DataTemplate>
 
         <support:VariableTypeTemplateSelector x:Key="VariableTypeTemplateSelector" StringItemTemplate="{StaticResource StringItemTemplate}" IntItemTemplate="{StaticResource IntItemTemplate}"/>
 
         <converters:VisibleWhenZeroConverter x:Key="VisibleWhenZeroConverter"  />
-        
+
     </UserControl.Resources>
     <Border BorderBrush="{Binding BorderBrush, ElementName=VariableListViewControl}"
             BorderThickness="{Binding BorderThickness, ElementName=VariableListViewControl}">
@@ -35,7 +46,7 @@
                   x:Name="MyList">
                 <ListView.Header>
                     <TextBlock Visibility="{x:Bind VM.Items.Count, Mode=OneWay, Converter={StaticResource VisibleWhenZeroConverter}}">
-                <Run Text="There are no items." />
+                        <Run Text="There are no items." />
                     </TextBlock>
                 </ListView.Header>
             </ListView>

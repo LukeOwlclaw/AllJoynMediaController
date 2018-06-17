@@ -38,7 +38,7 @@ namespace OpenAlljoynExplorer.Support
             Type propertyType = null;
             if (PropertyMap != null && propertyName != null)
                 propertyType = PropertyMap[propertyName];
-            GetProps(propertyParent: "", propertyObject: propertyObject, propertyType: propertyType);
+            GetProps(propertyPath: new string[0], propertyObject: propertyObject, propertyType: propertyType);
         }
 
         bool IsSimple(object obj)
@@ -46,15 +46,10 @@ namespace OpenAlljoynExplorer.Support
             return obj == null || obj.GetType() == typeof(string);
         }
 
-        private void GetProps(string propertyParent, object propertyObject, Type propertyType = null)
+        private void GetProps(IEnumerable<string> propertyPath, object propertyObject, Type propertyType = null)
         {
             // Filter simple object, e.g. we are not interested in the properties of a string.
             if (IsSimple(propertyObject)) return;
-
-            // Avoid recursive loops
-            var hash = propertyObject.GetHashCode();
-            if (KnownObjects.Contains(hash)) return;
-            KnownObjects.Add(hash);
 
             // If given, load available properties from type, else try reading from obj itself (will not work for ComObjects!)
             if (propertyType == null)
@@ -65,6 +60,14 @@ namespace OpenAlljoynExplorer.Support
             }
 
             PropertyInfo[] props = propertyType.GetProperties();
+
+            if (props.Length == 0)
+                return;
+
+            // Avoid recursive loops
+            var hash = propertyObject.GetHashCode();
+            if (KnownObjects.Contains(hash)) return;
+            KnownObjects.Add(hash);
 
             // Handle IList<> - each element is handled individually.
             var info = propertyType.GetTypeInfo();
@@ -84,7 +87,7 @@ namespace OpenAlljoynExplorer.Support
                     for (int i = 0; i < countValue; i++)
                     {
                         var listItem = info.GetDeclaredMethod("get_Item").Invoke(propertyObject, new object[] { i });
-                        GetProps(propertyParent + "[" + i + "]", listItem, listItemType);
+                        GetProps(AddToLastItemAndReturnNewList(propertyPath, "[" + i + "]"), listItem, listItemType);
                     }
                 }
             }
@@ -99,7 +102,7 @@ namespace OpenAlljoynExplorer.Support
                 int count = 0;
                 foreach (object o in array)
                 {
-                    GetProps(propertyParent + "[" + count++ + "]", o, elementType);
+                    GetProps(AddToLastItemAndReturnNewList(propertyPath, "[" + count++ + "]"), o, elementType);
                 }
             }
             else
@@ -109,25 +112,32 @@ namespace OpenAlljoynExplorer.Support
                     var propertyName = prop.Name;
                     object propertyValue = prop.GetValue(propertyObject);
 
+                    var newPropertyPath = propertyPath.Concat(new[] { propertyName });
+
                     if (SkipComObjects && propertyValue != null && propertyValue.ToString() != ComObjectTypeString) {
-                        AddProperty(propertyParent, propertyName, propertyValue);
+                        AddProperty(newPropertyPath, propertyValue);
                     }
 
                     // get child type, or null
                     PropertyMap.TryGetValue(propertyName, out Type childType);
-                    GetProps(propertyParent + "." + propertyName, propertyValue, childType);
+                    GetProps(newPropertyPath, propertyValue, childType);
                 }
             }
         }
 
-        private void AddProperty(string propertyParent, string propertyName, object propertyValue)
+        private IEnumerable<string> AddToLastItemAndReturnNewList(IEnumerable<string> propertyPath, string v)
         {
-            System.Diagnostics.Debug.WriteLine($" {propertyParent} {propertyName} -> {propertyValue}");
+            return propertyPath.Take(propertyPath.Count() - 1).Concat(new[] { propertyPath.LastOrDefault() + v });
+        }
+
+        private void AddProperty(IEnumerable<string> propertyPath, object propertyValue)
+        {
             VariableType item = new VariableType
             {
-                Name = propertyName,
+                PropertyPath = propertyPath,
                 Value = propertyValue
             };
+            System.Diagnostics.Debug.WriteLine($" {item.PropertyPathString} -> {propertyValue}");
             Out.Items.Add(item);
         }
     }
