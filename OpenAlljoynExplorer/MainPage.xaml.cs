@@ -45,5 +45,16 @@ namespace OpenAlljoynExplorer
             Controller = new MainPageController(VM);
             Controller.Start();
         }
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+        }
+
+        private void ListView_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            this.Frame.Navigate(typeof(ServicePage), e.ClickedItem);
+
+        }
     }
 }

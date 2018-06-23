@@ -37,13 +37,7 @@ namespace OpenAlljoynExplorer.Controllers
                 VM.AllJoynServices.Add(service);
                 var runAsync = service.ReadIconAsync();
                 runAsync = service.ReadAllAsync();
-
             });
-
-            //var runAsync = service.ReadIconAsync();
-            //runAsync = service.ReadAllAsync();
-            
-
         }
     }
 }

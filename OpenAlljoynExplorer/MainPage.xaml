@@ -23,7 +23,7 @@
             <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
 
-        <ListView  Grid.Row="1" ItemsSource="{x:Bind VM.AllJoynServices}" BorderBrush="LightGray" BorderThickness="3" Margin="0" ScrollViewer.VerticalScrollBarVisibility="Visible">
+        <ListView ItemClick="ListView_ItemClick" IsItemClickEnabled="True"  Grid.Row="1" ItemsSource="{x:Bind VM.AllJoynServices}" BorderBrush="LightGray" BorderThickness="3" Margin="0" ScrollViewer.VerticalScrollBarVisibility="Visible">
             <ListView.Header>
                 <TextBlock Visibility="{x:Bind VM.AllJoynServices.Count, Mode=OneWay, Converter={StaticResource VisibleWhenZeroConverter}}">
                 <Run Text="There are no items." />
@@ -35,7 +35,7 @@
                 </ItemsPanelTemplate>
             </ListView.ItemsPanel>
             <ListView.ItemTemplate>
-                <DataTemplate x:DataType="models:AllJoynService">
+                <DataTemplate x:DataType="models:AllJoynService" >
 
                     <Border BorderThickness="0" BorderBrush="Black" CornerRadius="10" MinWidth="200">
                         <Grid HorizontalAlignment="Left" MinWidth="200" MinHeight="200" MaxHeight="600" ScrollViewer.VerticalScrollBarVisibility="Visible">
