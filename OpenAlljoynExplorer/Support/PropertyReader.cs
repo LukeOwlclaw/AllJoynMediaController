@@ -14,7 +14,7 @@ namespace OpenAlljoynExplorer.Support
     public class PropertyReader
     {
         private const string ComObjectTypeString = "System.__ComObject";
-        private HashSet<int> KnownObjects = new HashSet<int>();
+        private Dictionary<int, string> KnownObjects = new Dictionary<int, string>();
 
         /// <summary>
         /// Map from property name to type of property.
@@ -38,7 +38,7 @@ namespace OpenAlljoynExplorer.Support
             Type propertyType = null;
             if (PropertyMap != null && propertyName != null)
                 propertyType = PropertyMap[propertyName];
-            GetProps(propertyPath: new string[0], propertyObject: propertyObject, propertyType: propertyType);
+            ReadRecursively(propertyPath: new string[] { propertyName }, propertyObject: propertyObject, propertyType: propertyType);
         }
 
         bool IsSimple(object obj)
@@ -46,13 +46,16 @@ namespace OpenAlljoynExplorer.Support
             return obj == null || obj.GetType() == typeof(string);
         }
 
-        private void GetProps(IEnumerable<string> propertyPath, object propertyObject, Type propertyType = null)
+        /// <summary>
+        /// Reads <paramref name="propertyObject"/> and all its properties recursively.
+        /// </summary>
+        /// <param name="propertyPath"></param>
+        /// <param name="propertyObject"></param>
+        /// <param name="propertyType"></param>
+        private void ReadRecursively(IEnumerable<string> propertyPath, object propertyObject, Type propertyType = null)
         {
-            // Filter simple object, e.g. we are not interested in the properties of a string.
-            if (IsSimple(propertyObject)) return;
-
             // If given, load available properties from type, else try reading from obj itself (will not work for ComObjects!)
-            if (propertyType == null)
+                if (propertyType == null)
             {
                 propertyType = propertyObject.GetType();
                 if (!SkipComObjects && propertyType.ToString().Equals(ComObjectTypeString, StringComparison.Ordinal))
@@ -61,13 +64,33 @@ namespace OpenAlljoynExplorer.Support
 
             PropertyInfo[] props = propertyType.GetProperties();
 
-            if (props.Length == 0)
+            
+            if (props.Length == 0 || IsSimple(propertyObject))
+            {
+                // For simple objects: E.g. int(does not have properties) and simple type like string(has only non - relevant properties)
+                // Include current simple object itself
+                AddProperty(propertyPath, propertyObject);
+                // No hashing, not getting child properties
                 return;
+            }
 
             // Avoid recursive loops
             var hash = propertyObject.GetHashCode();
-            if (KnownObjects.Contains(hash)) return;
-            KnownObjects.Add(hash);
+            VariableType item = new VariableType
+            {
+                PropertyPath = propertyPath,
+            };
+            if (KnownObjects.ContainsKey(hash))
+            {
+                item.Value = "Cycle to " + KnownObjects[hash];
+                AddProperty(item.PropertyPath, item.Value);
+                return;
+            }
+            KnownObjects.Add(hash, item.PropertyPathString ?? "this object");
+
+            // Include current object itself
+            AddProperty(propertyPath, propertyObject);
+            
 
             // Handle IList<> - each element is handled individually.
             var info = propertyType.GetTypeInfo();
@@ -87,7 +110,7 @@ namespace OpenAlljoynExplorer.Support
                     for (int i = 0; i < countValue; i++)
                     {
                         var listItem = info.GetDeclaredMethod("get_Item").Invoke(propertyObject, new object[] { i });
-                        GetProps(AddToLastItemAndReturnNewList(propertyPath, "[" + i + "]"), listItem, listItemType);
+                        ReadRecursively(AddToLastItemAndReturnNewList(propertyPath, "[" + i + "]"), listItem, listItemType);
                     }
                 }
             }
@@ -102,7 +125,7 @@ namespace OpenAlljoynExplorer.Support
                 int count = 0;
                 foreach (object o in array)
                 {
-                    GetProps(AddToLastItemAndReturnNewList(propertyPath, "[" + count++ + "]"), o, elementType);
+                    ReadRecursively(AddToLastItemAndReturnNewList(propertyPath, "[" + count++ + "]"), o, elementType);
                 }
             }
             else
@@ -114,14 +137,11 @@ namespace OpenAlljoynExplorer.Support
 
                     var newPropertyPath = propertyPath.Concat(new[] { propertyName });
 
-                    if (SkipComObjects && propertyValue != null && propertyValue.ToString() != ComObjectTypeString) {
-                        AddProperty(newPropertyPath, propertyValue);
-                    }
-
                     // get child type, or null
                     PropertyMap.TryGetValue(propertyName, out Type childType);
-                    GetProps(newPropertyPath, propertyValue, childType);
+                    ReadRecursively(newPropertyPath, propertyValue, childType);
                 }
+                
             }
         }
 
@@ -137,8 +157,8 @@ namespace OpenAlljoynExplorer.Support
                 PropertyPath = propertyPath,
                 Value = propertyValue
             };
-            System.Diagnostics.Debug.WriteLine($" {item.PropertyPathString} -> {propertyValue}");
-            Out.Items.Add(item);
+            //System.Diagnostics.Debug.WriteLine($" {item.PropertyPathString} -> {propertyValue}");
+            Out.Items.Add(item);            
         }
     }
 }
