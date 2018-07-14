@@ -1,6 +1,4 @@
-﻿using OpenAlljoynExplorer.Controllers;
-using OpenAlljoynExplorer.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -18,18 +16,14 @@ using Windows.UI.Xaml.Navigation;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
-namespace OpenAlljoynExplorer
+namespace OpenAlljoynExplorer.Pages
 {
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class ServicePage : Page
+    public partial class BackBasePage : Page
     {
-        public AllJoynService VM { get; set; }
-
-        public ServicePageController Controller { get; set; }
-
-        public ServicePage()
+        public BackBasePage()
         {
             this.InitializeComponent();
 
@@ -43,30 +37,10 @@ namespace OpenAlljoynExplorer
             this.KeyboardAccelerators.Add(AltLeft);
             // ALT routes here
             AltLeft.Modifiers = VirtualKeyModifiers.Menu;
-
-            Loaded += ServicePage_Loaded;
-        }
-
-        private void ServicePage_Loaded(object sender, RoutedEventArgs e)
-        {
-            Controller = new ServicePageController(VM);
-            Controller.Start();
-        }
-
-        protected override void OnNavigatedTo(NavigationEventArgs e)
-        {
-            BackButton.IsEnabled = this.Frame.CanGoBack;
-            VM = (AllJoynService)e.Parameter;
-
-        }
-
-        private void BackButton_Click(object sender, RoutedEventArgs e)
-        {
-            On_BackRequested();
         }
 
         // Handles system-level BackRequested events and page-level back button Click events
-        private bool On_BackRequested()
+        protected bool On_BackRequested()
         {
             if (this.Frame.CanGoBack)
             {
@@ -76,15 +50,10 @@ namespace OpenAlljoynExplorer
             return false;
         }
 
-        private void BackInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        protected void BackInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
         {
             On_BackRequested();
             args.Handled = true;
-        }
-
-        private void TestButton_Click(object sender, RoutedEventArgs e)
-        {
-
         }
     }
 }

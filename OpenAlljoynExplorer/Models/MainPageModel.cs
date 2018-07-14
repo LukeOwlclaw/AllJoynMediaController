@@ -9,9 +9,12 @@ using VariableItemListView.Support;
 
 namespace OpenAlljoynExplorer.Models
 {
-    public class MainPageModel : Bindable
+    /// <summary>
+    /// Holds connection instances to all available AllJoyn services.
+    /// </summary>
+    public class AllJoynModel : Bindable
     {
-        public MainPageModel()
+        public AllJoynModel()
         {
             VariableListViewModel = new VariableListViewModel();
             AllJoynServices = new ObservableCollectionThreadSafe<AllJoynService>();            

@@ -8,9 +8,9 @@ namespace OpenAlljoynExplorer.Controllers
 {
     public class ServicePageController
     {
-        private AllJoynService VM;
+        private IService VM;
 
-        public ServicePageController(AllJoynService VM)
+        public ServicePageController(IService VM)
         {
             this.VM = VM;
         }

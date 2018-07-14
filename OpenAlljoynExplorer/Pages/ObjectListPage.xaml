@@ -1,0 +1,54 @@
+﻿<local:BackBasePage
+    x:Class="OpenAlljoynExplorer.Pages.ObjectListPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:deviceproviders="using:DeviceProviders"
+    xmlns:local="using:OpenAlljoynExplorer.Pages"
+    xmlns:models="using:OpenAlljoynExplorer.Models"
+    xmlns:converters="using:Shared.Converters"
+    xmlns:controls="using:Shared.Controls"
+    xmlns:variableItemListView="using:VariableItemListView"
+    xmlns:support="using:OpenAlljoynExplorer.Support"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <local:BackBasePage.Resources>
+        <converters:VisibleWhenZeroConverter x:Key="VisibleWhenZeroConverter"  />
+        <converters:VisibleWhenNotNullConverter x:Key="VisibleWhenNotNullConverter"  />
+    </local:BackBasePage.Resources>
+    
+    <Grid>
+        <StackPanel>
+        <Button x:Name="BackButton" Click="BackButton_Click" Style="{StaticResource NavigationBackButtonNormalStyle}"/>
+        <Button x:Name="TestButton" Click="TestButton_Click" Content="Test"/>
+            <TextBlock Grid.Row="1" Text="{x:Bind VM.AboutData.AppName}" />
+            <TextBlock>Objects of this service</TextBlock>
+            <ListView ItemClick="ListView_IBusObjectClick" IsItemClickEnabled="True"  ItemsSource="{x:Bind VM.Objects}">
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <controls:WrapPanel />
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="deviceproviders:IBusObject" >
+                        <Border BorderThickness="0" BorderBrush="Black" CornerRadius="10" MinWidth="200">
+                            <Grid HorizontalAlignment="Left" MinWidth="200" MinHeight="200" MaxHeight="600" ScrollViewer.VerticalScrollBarVisibility="Visible">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"></RowDefinition>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                    <ColumnDefinition Width="*"></ColumnDefinition>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Grid.Row="0" Text="{x:Bind Path}" />
+                            </Grid>
+                        </Border>
+
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </StackPanel>
+    </Grid>
+</local:BackBasePage>

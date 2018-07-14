@@ -5,11 +5,14 @@ using OpenAlljoynExplorer.Support;
 
 namespace OpenAlljoynExplorer.Controllers
 {
-    public class MainPageController
+    /// <summary>
+    /// Detects all available AllJoyn Services.
+    /// </summary>
+    public class AllJoynController
     {
-        private MainPageModel VM;
+        private AllJoynModel VM;
 
-        public MainPageController(MainPageModel VM)
+        public AllJoynController(AllJoynModel VM)
         {
             this.VM = VM;
         }

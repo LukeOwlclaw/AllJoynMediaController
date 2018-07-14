@@ -18,31 +18,26 @@ using Windows.UI.Xaml.Navigation;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
-namespace OpenAlljoynExplorer
+namespace OpenAlljoynExplorer.Pages
 {
     /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
+    /// Page that lists of available AllJoyn Services (MainPage)
     /// </summary>
-    public sealed partial class MainPage : Page
+    public sealed partial class ServiceListPage : Page
     {
-        public MainPageModel VM { get; set; }
-        public MainPageController Controller { get; set; }
+        public AllJoynModel VM { get; set; }
+        public AllJoynController Controller { get; set; }
 
-
-        //public List<VariableType> Files { get; set; }
-        public MainPage()
+        public ServiceListPage()
         {
-            VM = new MainPageModel();
-            //Files = new List<VariableType>();
-            //Files.Add(new VariableType(1));
-            //Files.Add(new VariableType(2));
+            VM = new AllJoynModel();
             this.InitializeComponent();
-            Loaded += MainPage_Loaded;
+            Loaded += ServiceListPage_Loaded;
         }
 
-        private void MainPage_Loaded(object sender, RoutedEventArgs e)
+        private void ServiceListPage_Loaded(object sender, RoutedEventArgs e)
         {
-            Controller = new MainPageController(VM);
+            Controller = new AllJoynController(VM);
             Controller.Start();
         }
 
@@ -53,7 +48,8 @@ namespace OpenAlljoynExplorer
 
         private void ListView_ItemClick(object sender, ItemClickEventArgs e)
         {
-            this.Frame.Navigate(typeof(ServicePage), e.ClickedItem);
+            AllJoynService allJoynService = e.ClickedItem as AllJoynService;
+            this.Frame.Navigate(typeof(ObjectListPage), allJoynService.Service);
 
         }
     }

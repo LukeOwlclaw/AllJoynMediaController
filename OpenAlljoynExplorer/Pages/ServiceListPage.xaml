@@ -1,8 +1,8 @@
 ﻿<Page
-    x:Class="OpenAlljoynExplorer.MainPage"
+    x:Class="OpenAlljoynExplorer.Pages.ServiceListPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:OpenAlljoynExplorer"
+    xmlns:local="using:OpenAlljoynExplorer.Pages"
     xmlns:models="using:OpenAlljoynExplorer.Models"
     xmlns:converters="using:Shared.Converters"
     xmlns:controls="using:Shared.Controls"
