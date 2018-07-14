@@ -19,28 +19,32 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"></ColumnDefinition>
                     <ColumnDefinition Width="Auto"></ColumnDefinition>
+                    <ColumnDefinition Width="Auto"></ColumnDefinition>
                     <ColumnDefinition Width="*"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="{x:Bind PropertyPathString}" />
-                <TextBlock Grid.Column="1"  Text=":" Margin="0,0,10,0" />
-                <TextBox HorizontalAlignment="Stretch" Grid.Column="2" Text="{x:Bind Value}" BorderThickness="0" Margin="0" Padding="0" TextWrapping="NoWrap" IsReadOnly="True" AcceptsReturn="True" Height="7"  />
+                <TextBlock Grid.Column="0" Text="{x:Bind Index}" Margin="0,0,10,0" />
+                <TextBlock Grid.Column="1" Text="{x:Bind PropertyPathString}" />
+                <TextBlock Grid.Column="2"  Text=":" Margin="0,0,10,0" />
+                <TextBox HorizontalAlignment="Stretch" Grid.Column="3" Text="{x:Bind Value}" BorderThickness="0" Margin="0" Padding="0" TextWrapping="NoWrap" IsReadOnly="True" AcceptsReturn="True" Height="7"  />
             </Grid>
         </DataTemplate>
         <DataTemplate x:Key="StringItemTemplate" x:DataType="models:VariableType">
-            <ContentPresenter Content="{Binding}" ContentTemplate="{StaticResource BaseItemTemplate}"/>
+            <!-- WARNING! DO NOT USE Content="{Binding}"   IT WILL BREAK THE ORDER OF THE LIST!!! -->
+            <ContentPresenter Content="{x:Bind}" ContentTemplate="{StaticResource BaseItemTemplate}"/>
         </DataTemplate>
 
         <DataTemplate x:Key="IntItemTemplate" x:DataType="models:VariableType">
-            <ContentPresenter Content="{Binding}" ContentTemplate="{StaticResource BaseItemTemplate}"/>
+            <ContentPresenter Content="{x:Bind}" ContentTemplate="{StaticResource BaseItemTemplate}"/>
         </DataTemplate>
 
-        <support:VariableTypeTemplateSelector x:Key="VariableTypeTemplateSelector" StringItemTemplate="{StaticResource StringItemTemplate}" IntItemTemplate="{StaticResource IntItemTemplate}"/>
+        <support:VariableTypeTemplateSelector x:Key="VariableTypeTemplateSelector" 
+                                              StringItemTemplate="{StaticResource StringItemTemplate}" 
+                                              IntItemTemplate="{StaticResource IntItemTemplate}"/>
 
         <converters:VisibleWhenZeroConverter x:Key="VisibleWhenZeroConverter"  />
 
     </UserControl.Resources>
-    <Border BorderBrush="{Binding BorderBrush, ElementName=VariableListViewControl}"
-            BorderThickness="{Binding BorderThickness, ElementName=VariableListViewControl}">
+    <Border BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}">
         <Grid>
             <ListView ItemsSource="{x:Bind VM.Items}" ItemTemplateSelector="{StaticResource VariableTypeTemplateSelector}"
                   x:Name="MyList">

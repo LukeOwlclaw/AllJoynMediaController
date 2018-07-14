@@ -150,12 +150,15 @@ namespace OpenAlljoynExplorer.Support
             return propertyPath.Take(propertyPath.Count() - 1).Concat(new[] { propertyPath.LastOrDefault() + v });
         }
 
+        public int PropertyCounter { get; private set; }
+
         private void AddProperty(IEnumerable<string> propertyPath, object propertyValue)
         {
             VariableType item = new VariableType
             {
                 PropertyPath = propertyPath,
-                Value = propertyValue
+                Value = propertyValue,
+                Index = PropertyCounter++
             };
             //System.Diagnostics.Debug.WriteLine($" {item.PropertyPathString} -> {propertyValue}");
             Out.Items.Add(item);            

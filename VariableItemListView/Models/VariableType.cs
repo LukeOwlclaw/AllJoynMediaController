@@ -13,11 +13,13 @@ namespace VariableItemListView.Models
         public IEnumerable<string> PropertyPath { get; set; }
         public string PropertyPathString { get { return (PropertyPath == null || PropertyPath.Count() == 0) ? null : string.Join(".", PropertyPath);  } }
 
+        public int Index { get; set; }
+
         public VariableType() { }
 
         public override string ToString()
         {
-            return PropertyPathString;
+            return Index + " " + PropertyPathString;
         }
     }
 }

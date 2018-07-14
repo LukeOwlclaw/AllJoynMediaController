@@ -53,7 +53,7 @@ namespace OpenAlljoynExplorer.Models
             }
         }
 
-        internal async Task ReadAllAsync()
+        internal void ReadAll()
         {
             // Define all properties/fields which we want PropertyReader to read
             Dictionary<string, Type> PropMap = new Dictionary<string, Type> {

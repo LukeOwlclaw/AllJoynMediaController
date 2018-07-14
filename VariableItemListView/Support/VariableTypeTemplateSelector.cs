@@ -34,7 +34,9 @@ namespace VariableItemListView.Support
                 };
             }
 
-            bool b = gTypeDict.TryGetValue(variableTypeObject.Value.GetType(), out DataTemplate template);
+            DataTemplate template = null;
+            if (variableTypeObject.Value != null)
+                gTypeDict.TryGetValue(variableTypeObject.Value.GetType(), out template);
 
             if (template == null)
             {
