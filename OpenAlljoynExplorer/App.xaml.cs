@@ -29,8 +29,14 @@ namespace OpenAlljoynExplorer
         /// </summary>
         public App()
         {
+            this.UnhandledException += App_UnhandledException;
             this.InitializeComponent();
             this.Suspending += OnSuspending;
+        }
+
+        private void App_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>

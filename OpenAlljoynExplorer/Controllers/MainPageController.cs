@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Linq;
 using DeviceProviders;
 using OpenAlljoynExplorer.Models;
 using OpenAlljoynExplorer.Support;
+using Windows.UI.Xaml.Controls;
 
 namespace OpenAlljoynExplorer.Controllers
 {
@@ -33,19 +35,69 @@ namespace OpenAlljoynExplorer.Controllers
 
         private async void ServiceJoined(IProvider sender, ServiceJoinedEventArgs args)
         {
-
             AllJoynService service = null;
-            service = new AllJoynService(args.Service);
-            await service.ReadIconAsync();
-            service.ReadAll();
+            try
+            {
+                service = new AllJoynService(args.Service);
+                if (mNavigationActive)
+                {
+                    if (service.Service.AboutData.DeviceId == mNavigationDeviceId)
+                    {
+                        var navigationObject = service.Service.Objects.FirstOrDefault(o => o.Path == mNavigationObjectPath);
+                        if (navigationObject != null)
+                        {
+                            var navigationInterface = navigationObject.Interfaces.FirstOrDefault(i => i.Name == mNavigationInterfaceName);
+                            if (navigationInterface != null)
+                            {
+                                await Dispatcher.Dispatch(() =>
+                                {
+                                    mNavigationFrame.Navigate(typeof(Pages.InterfacePage), navigationInterface);
+                                });
+                                return;
+                            }
+                        }
+                    }
+                }
+                await service.ReadIconAsync();
+                service.ReadAll();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex);
+                return;
+            }
 
             await Dispatcher.Dispatch(() =>
             {
-               
                 VM.AllJoynServices.Add(service);
-                
             });
-            
+        }
+
+        bool mNavigationActive = false;
+        Frame mNavigationFrame;
+        string mNavigationDeviceId;
+        string mNavigationObjectPath;
+        string mNavigationInterfaceName;
+
+        /// <summary>
+        /// As soon as <see cref="Start"/> is called, looks for given interface and then navigates to it.
+        /// </summary>
+        /// <param name="frame"></param>
+        /// <param name="deviceId"></param>
+        /// <param name="objectPath"></param>
+        /// <param name="interfaceName"></param>
+        internal void GoTo(Frame frame, string deviceId, string objectPath, string interfaceName)
+        {
+            mNavigationActive = true;
+            mNavigationFrame = frame;
+            mNavigationDeviceId = deviceId;
+            mNavigationObjectPath = objectPath;
+            mNavigationInterfaceName = interfaceName;
+            var dummyService = new AllJoynService(new DummyNavigationService());
+            var asyncTask = Dispatcher.Dispatch(() =>
+            {
+                VM.AllJoynServices.Add(dummyService);
+            });
         }
     }
 }

@@ -36,20 +36,36 @@ namespace OpenAlljoynExplorer.Models
 
         internal async Task ReadIconAsync()
         {
-            var icon = await Service.AboutData.GetIconAsync();
-            var iconBytes = icon?.Content?.ToArray();
-            if (iconBytes != null)
+            try
             {
-                await Dispatcher.Dispatch(async () =>
+                // Warning! If icon is not implemented correctly (?) it can happen that GetIconAsync() throws an unhandled, unmanaged exception
+                // which crashes this program without being able to avoid that. (Just try "AllJoyn Device Emulator" from Windows Store.)
+                IAboutIcon icon = null; //await Service.AboutData.GetIconAsync();
+                var iconBytes = icon?.Content?.ToArray();
+                if (iconBytes != null)
                 {
-                    Icon = new BitmapImage();
-                    using (InMemoryRandomAccessStream stream = new InMemoryRandomAccessStream())
+                    await Dispatcher.Dispatch(async () =>
                     {
-                        await stream.WriteAsync(iconBytes.AsBuffer());
-                        stream.Seek(0);
-                        await Icon.SetSourceAsync(stream);
-                    }
-                });
+                        try
+                        {
+                            Icon = new BitmapImage();
+                            using (InMemoryRandomAccessStream stream = new InMemoryRandomAccessStream())
+                            {
+                                await stream.WriteAsync(iconBytes.AsBuffer());
+                                stream.Seek(0);
+                                await Icon.SetSourceAsync(stream);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine(ex);
+                        }
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex);
             }
         }
 
@@ -62,6 +78,10 @@ namespace OpenAlljoynExplorer.Models
                 {"Objects", typeof(IList<IBusObject>) },
                 {"ChildObjects", typeof(IList<IBusObject>) },
                 {"Interfaces", typeof(IList<IInterface>) },
+                //{"Methods", typeof(IReadOnlyList<IMethod>) },
+                //{"Annotations", typeof(IReadOnlyDictionary<string, string>) },
+                //{"OutSignature", typeof(IList<DeviceProviders.ParameterInfo>) },
+                //{"InSignature", typeof(IList<DeviceProviders.ParameterInfo>) },
                 //{"Services", typeof(IList<IService>) }, // Services in Provider
                 {nameof(Service), typeof(IService) },
             };

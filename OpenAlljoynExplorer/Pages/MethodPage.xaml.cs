@@ -22,30 +22,31 @@ using Windows.UI.Xaml.Navigation;
 namespace OpenAlljoynExplorer.Pages
 {
     /// <summary>
-    /// Page that shown all objects belonging to given AllJoyn service.
+    /// Page that shows a given AllJoyn Interface (including Properties, Methods, Signals)
+    /// (Interface is part of Object which is part of AllJosn Service)
     /// </summary>
-    public sealed partial class ObjectListPage : BackBasePage
+    public sealed partial class MethodPage : BackBasePage
     {
-        public AllJoynService VM { get; set; }
+        public IMethod VM { get; set; }
 
         public ServicePageController Controller { get; set; }
 
-        public ObjectListPage() : base()
+        public MethodPage() : base()
         {
             this.InitializeComponent();
-            Loaded += ServicePage_Loaded;
+            Loaded += MethodPage_Loaded;
         }
 
-        private void ServicePage_Loaded(object sender, RoutedEventArgs e)
+        private void MethodPage_Loaded(object sender, RoutedEventArgs e)
         {
-            Controller = new ServicePageController(VM.Service);
-            Controller.Start();
+            //Controller = new ServicePageController(VM);
+            //Controller.Start();
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             BackButton.IsEnabled = this.Frame.CanGoBack;
-            VM = (AllJoynService)e.Parameter;
+            VM = (IMethod)e.Parameter;
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
@@ -53,21 +54,6 @@ namespace OpenAlljoynExplorer.Pages
             On_BackRequested();
         }
 
-      
-
-        private void TestButton_Click(object sender, RoutedEventArgs e)
-        {
-            var paths = VM.Service.Objects.Select(o => o.Path).ToList();
-            var interfaces = VM.Service.Objects.Select(o => o.Interfaces).ToList();
-            //interfaces..FirstOrDefault().na
-            var path= VM.Service.Objects.Select(o => o.Path).ToList();
-        }
-
-        private void ListView_IBusObjectClick(object sender, ItemClickEventArgs e)
-        {
-            IBusObject busObject = e.ClickedItem as IBusObject;
-            this.Frame.Navigate(typeof(InterfaceListPage), busObject.Interfaces);
-        }
 
     }
 }

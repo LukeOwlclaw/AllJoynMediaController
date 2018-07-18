@@ -57,7 +57,7 @@ namespace OpenAlljoynExplorer.Pages
         private void ListView_MethodClick(object sender, ItemClickEventArgs e)
         {
             var method = e.ClickedItem as IMethod;
-            //this.Frame.Navigate(typeof(ObjectListPage), busObject.Interfaces);
+            this.Frame.Navigate(typeof(MethodPage), method);
         }
 
         private void ListView_SignalClick(object sender, ItemClickEventArgs e)

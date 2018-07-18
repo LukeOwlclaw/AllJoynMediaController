@@ -22,9 +22,9 @@
         <StackPanel>
         <Button x:Name="BackButton" Click="BackButton_Click" Style="{StaticResource NavigationBackButtonNormalStyle}"/>
         <Button x:Name="TestButton" Click="TestButton_Click" Content="Test"/>
-            <TextBlock Grid.Row="1" Text="{x:Bind VM.AboutData.AppName}" />
+            <TextBlock Grid.Row="1" Text="{x:Bind VM.Service.AboutData.AppName}" />
             <TextBlock>Objects of this service</TextBlock>
-            <ListView ItemClick="ListView_IBusObjectClick" IsItemClickEnabled="True"  ItemsSource="{x:Bind VM.Objects}">
+            <ListView ItemClick="ListView_IBusObjectClick" IsItemClickEnabled="True"  ItemsSource="{x:Bind VM.Service.Objects}">
                 <ListView.ItemsPanel>
                     <ItemsPanelTemplate>
                         <controls:WrapPanel />

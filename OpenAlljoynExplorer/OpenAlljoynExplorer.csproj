@@ -96,11 +96,16 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controllers\ServicePageController.cs" />
+    <Compile Include="Models\DummyNavigationAboutData.cs" />
+    <Compile Include="Models\DummyNavigationService.cs" />
     <Compile Include="Pages\BackBasePage.xaml.cs">
       <DependentUpon>BackBasePage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Pages\InterfaceListPage.xaml.cs">
       <DependentUpon>InterfaceListPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\MethodPage.xaml.cs">
+      <DependentUpon>MethodPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Pages\ServiceListPage.xaml.cs">
       <DependentUpon>ServiceListPage.xaml</DependentUpon>
@@ -144,6 +149,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Pages\InterfaceListPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Pages\MethodPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

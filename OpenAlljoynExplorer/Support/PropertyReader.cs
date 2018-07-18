@@ -54,8 +54,14 @@ namespace OpenAlljoynExplorer.Support
         /// <param name="propertyType"></param>
         private void ReadRecursively(IEnumerable<string> propertyPath, object propertyObject, Type propertyType = null)
         {
+            if (propertyObject == null)
+            {
+                AddProperty(propertyPath, propertyObject);
+                return;
+            }
+
             // If given, load available properties from type, else try reading from obj itself (will not work for ComObjects!)
-                if (propertyType == null)
+            if (propertyType == null)
             {
                 propertyType = propertyObject.GetType();
                 if (!SkipComObjects && propertyType.ToString().Equals(ComObjectTypeString, StringComparison.Ordinal))
@@ -64,7 +70,7 @@ namespace OpenAlljoynExplorer.Support
 
             PropertyInfo[] props = propertyType.GetProperties();
 
-            
+
             if (props.Length == 0 || IsSimple(propertyObject))
             {
                 // For simple objects: E.g. int(does not have properties) and simple type like string(has only non - relevant properties)
@@ -90,7 +96,7 @@ namespace OpenAlljoynExplorer.Support
 
             // Include current object itself
             AddProperty(propertyPath, propertyObject);
-            
+
 
             // Handle IList<> - each element is handled individually.
             var info = propertyType.GetTypeInfo();
@@ -113,6 +119,49 @@ namespace OpenAlljoynExplorer.Support
                         ReadRecursively(AddToLastItemAndReturnNewList(propertyPath, "[" + i + "]"), listItem, listItemType);
                     }
                 }
+                else if (info.GetGenericTypeDefinition() == typeof(IReadOnlyList<>))
+                {
+                    // get the type of the list elements, ie. T for IList<T>
+                    var listItemType = info.GenericTypeArguments[0];
+
+                    // IList implements ICollection which provides Count property. Get it!
+                    var collection = typeof(IReadOnlyCollection<>).MakeGenericType(listItemType);
+                    var countProperty = collection.GetProperty("Count");
+                    var countValue = (int)countProperty?.GetValue(propertyObject);
+
+                    // for each element in IList
+                    for (int i = 0; i < countValue; i++)
+                    {
+                        var listItem = info.GetDeclaredMethod("get_Item").Invoke(propertyObject, new object[] { i });
+                        ReadRecursively(AddToLastItemAndReturnNewList(propertyPath, "[" + i + "]"), listItem, listItemType);
+                    }
+                }
+                else if (info.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>))
+                {
+                    // get the type of the list elements, ie. T for IList<T>
+                    var dictionaryKeyType = info.GenericTypeArguments[0];
+                    var dictionaryKeyValue = info.GenericTypeArguments[1];
+                    if (dictionaryKeyType != typeof(string) || dictionaryKeyValue != typeof(string))
+                    {
+                        AddProperty(propertyPath, "[UNSUPPORTED GENERIC DICTIONARY TYPE]");
+                    }
+                    else
+                    {
+                        var dictionaryKeyValuePair = typeof(KeyValuePair<,>).MakeGenericType(dictionaryKeyType, dictionaryKeyValue);
+
+                        var keys = info.GetDeclaredMethod("get_Keys").Invoke(propertyObject, new object[0]) as IEnumerable<string>;
+                        var values = info.GetDeclaredMethod("get_Values").Invoke(propertyObject, new object[0]) as IEnumerable<string>;
+                        var togethers = keys.Zip(values, (f, s) => new KeyValuePair<string, string>(f, s));
+                        foreach (var together in togethers)
+                        {
+                            ReadRecursively(AddToLastItemAndReturnNewList(propertyPath, "[" + together.Key + "]"), together.Value);
+                        }
+                    }
+                }
+                else
+                {
+                    AddProperty(propertyPath, "[UNKNOWN GENERIC TYPE]");
+                }
             }
             else if (propertyType.IsArray)
             {
@@ -130,18 +179,32 @@ namespace OpenAlljoynExplorer.Support
             }
             else
             {
-                foreach (var prop in props)
+                try
                 {
-                    var propertyName = prop.Name;
-                    object propertyValue = prop.GetValue(propertyObject);
+                    foreach (var prop in props)
+                    {
+                        var propertyName = prop.Name;
+                        object propertyValue = prop.GetValue(propertyObject);
 
-                    var newPropertyPath = propertyPath.Concat(new[] { propertyName });
+                        var newPropertyPath = propertyPath.Concat(new[] { propertyName });
 
-                    // get child type, or null
-                    PropertyMap.TryGetValue(propertyName, out Type childType);
-                    ReadRecursively(newPropertyPath, propertyValue, childType);
+                        // get child type, or null
+                        PropertyMap.TryGetValue(propertyName, out Type childType);
+                        ReadRecursively(newPropertyPath, propertyValue, childType);
+                    }
                 }
-                
+                catch (Exception ex)
+                {
+                    if (ex.GetType().FullName == "System.Reflection.TargetException" && ex.HResult == unchecked((int)0x80131603))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Object at path {string.Join(".", propertyPath)} is supposed to be of type {propertyType} but it is not!");
+                        AddProperty(propertyPath, $"[NOT OF TYPE {propertyType}]");
+                    }
+                    else
+                    {
+                        AddProperty(propertyPath, ex.ToString());
+                    }
+                }
             }
         }
 
@@ -161,7 +224,7 @@ namespace OpenAlljoynExplorer.Support
                 Index = PropertyCounter++
             };
             //System.Diagnostics.Debug.WriteLine($" {item.PropertyPathString} -> {propertyValue}");
-            Out.Items.Add(item);            
+            Out.Items.Add(item);
         }
     }
 }
