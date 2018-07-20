@@ -39,7 +39,9 @@ namespace OpenAlljoynExplorer.Pages
         {
             Controller = new AllJoynController(VM);
             // for testing, go directly to this AllJoyn interface:
-            Controller.GoTo(frame: this.Frame, deviceId: "2e1b9ed0-8429-4934-a566-9c44cda28b99", objectPath: "/About", interfaceName: "org.alljoyn.About");
+            Controller.GoTo(frame: this.Frame, deviceId: "2e1b9ed0-8429-4934-a566-9c44cda28b99", objectPath: "/About",
+                interfaceName: "org.alljoyn.About", methodName: "GetAboutData");
+            //interfaceName: "org.alljoyn.About", methodName: "GetObjectDescription");
             Controller.Start();
         }
 

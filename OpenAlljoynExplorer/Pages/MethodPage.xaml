@@ -18,11 +18,19 @@
         <converters:VisibleWhenNotNullConverter x:Key="VisibleWhenNotNullConverter"  />
     </local:BackBasePage.Resources>
 
-    <Grid>
-        <StackPanel>
-            <Button x:Name="BackButton" Click="BackButton_Click" Style="{StaticResource NavigationBackButtonNormalStyle}"/>
-            <TextBlock>Method</TextBlock>
-            <TextBlock Text="{x:Bind VM.Name}" />
-        </StackPanel>
+    <Grid  ScrollViewer.VerticalScrollBarVisibility="Visible">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Button Grid.Row="1" x:Name="BackButton" Click="BackButton_Click" Style="{StaticResource NavigationBackButtonNormalStyle}"/>
+        <TextBlock Grid.Row="2">Method</TextBlock>
+        <TextBlock Grid.Row="3" Text="{x:Bind VM.Method.Name}" />
+        <variableItemListView:VariableItemListView Grid.Row="4" VM="{x:Bind VM.VariableListViewModel}" BorderBrush="LightGray" 
+                                                       BorderThickness="3" Margin="10" />
     </Grid>
+
 </local:BackBasePage>

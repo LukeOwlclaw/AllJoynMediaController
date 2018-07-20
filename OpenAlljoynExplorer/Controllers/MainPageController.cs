@@ -49,10 +49,24 @@ namespace OpenAlljoynExplorer.Controllers
                             var navigationInterface = navigationObject.Interfaces.FirstOrDefault(i => i.Name == mNavigationInterfaceName);
                             if (navigationInterface != null)
                             {
-                                await Dispatcher.Dispatch(() =>
+                                if (mNavigationMethodName != null)
                                 {
-                                    mNavigationFrame.Navigate(typeof(Pages.InterfacePage), navigationInterface);
-                                });
+                                    var method = navigationInterface.GetMethod(mNavigationMethodName);
+                                    if (method != null)
+                                    {
+                                        await Dispatcher.Dispatch(() =>
+                                        {
+                                            mNavigationFrame.Navigate(typeof(Pages.MethodPage), method);
+                                        });
+                                    }
+                                }
+                                else
+                                {
+                                    await Dispatcher.Dispatch(() =>
+                                    {
+                                        mNavigationFrame.Navigate(typeof(Pages.InterfacePage), navigationInterface);
+                                    });
+                                }
                                 return;
                             }
                         }
@@ -78,6 +92,7 @@ namespace OpenAlljoynExplorer.Controllers
         string mNavigationDeviceId;
         string mNavigationObjectPath;
         string mNavigationInterfaceName;
+        string mNavigationMethodName;
 
         /// <summary>
         /// As soon as <see cref="Start"/> is called, looks for given interface and then navigates to it.
@@ -86,13 +101,14 @@ namespace OpenAlljoynExplorer.Controllers
         /// <param name="deviceId"></param>
         /// <param name="objectPath"></param>
         /// <param name="interfaceName"></param>
-        internal void GoTo(Frame frame, string deviceId, string objectPath, string interfaceName)
+        internal void GoTo(Frame frame, string deviceId, string objectPath, string interfaceName, string methodName = null)
         {
             mNavigationActive = true;
             mNavigationFrame = frame;
             mNavigationDeviceId = deviceId;
             mNavigationObjectPath = objectPath;
             mNavigationInterfaceName = interfaceName;
+            mNavigationMethodName = methodName;
             var dummyService = new AllJoynService(new DummyNavigationService());
             var asyncTask = Dispatcher.Dispatch(() =>
             {

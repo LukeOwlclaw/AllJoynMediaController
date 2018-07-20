@@ -98,6 +98,7 @@
     <Compile Include="Controllers\ServicePageController.cs" />
     <Compile Include="Models\DummyNavigationAboutData.cs" />
     <Compile Include="Models\DummyNavigationService.cs" />
+    <Compile Include="Models\MethodModel.cs" />
     <Compile Include="Pages\BackBasePage.xaml.cs">
       <DependentUpon>BackBasePage.xaml</DependentUpon>
     </Compile>
@@ -190,7 +191,6 @@
       <Name>VariableItemListView</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>
