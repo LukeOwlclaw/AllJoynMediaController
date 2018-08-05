@@ -33,7 +33,7 @@
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="deviceproviders:IBusObject" >
                         <Border BorderThickness="0" BorderBrush="Black" CornerRadius="10" MinWidth="200">
-                            <Grid HorizontalAlignment="Left" MinWidth="200" MinHeight="200" MaxHeight="600" ScrollViewer.VerticalScrollBarVisibility="Visible">
+                            <Grid HorizontalAlignment="Left" MinWidth="200" MinHeight="20" MaxHeight="600" ScrollViewer.VerticalScrollBarVisibility="Visible">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="*"></RowDefinition>
                                 </Grid.RowDefinitions>

@@ -27,6 +27,18 @@ namespace OpenAlljoynExplorer.Models
             get { return Get<IMethod>(); }
             set { Set(value); }
         }
-        
+
+        public AllJoynStatus MethodStatus
+        {
+            get { return Get<AllJoynStatus>(); }
+            set { Set(value); }
+        }
+
+        public string MethodResult
+        {
+            get { return Get<string>(); }
+            set { Set(value); }
+        }
+
     }
 }

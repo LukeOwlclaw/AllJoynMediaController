@@ -16,6 +16,7 @@
     <local:BackBasePage.Resources>
         <converters:VisibleWhenZeroConverter x:Key="VisibleWhenZeroConverter"  />
         <converters:VisibleWhenNotNullConverter x:Key="VisibleWhenNotNullConverter"  />
+        <converters:VisibleWhenTrueConverter x:Key="VisibleWhenTrueConverter"  />
     </local:BackBasePage.Resources>
 
     <Grid  ScrollViewer.VerticalScrollBarVisibility="Visible">
@@ -24,13 +25,25 @@
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
         <Button Grid.Row="1" x:Name="BackButton" Click="BackButton_Click" Style="{StaticResource NavigationBackButtonNormalStyle}"/>
-        <TextBlock Grid.Row="2">Method</TextBlock>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" >
+            <TextBlock >Method</TextBlock>
+            <Button x:Name="TestButton" Click="TestButton_Click" Content="Test" />
+        </StackPanel> 
         <TextBlock Grid.Row="3" Text="{x:Bind VM.Method.Name}" />
-        <variableItemListView:VariableItemListView Grid.Row="4" VM="{x:Bind VM.VariableListViewModel}" BorderBrush="LightGray" 
+        <StackPanel Grid.Row="4" Visibility="{x:Bind VM.MethodStatus, Mode=OneWay, Converter={StaticResource VisibleWhenNotNullConverter}, FallbackValue=Collapsed}">
+            <TextBlock Text="SUCCESS!" Foreground="Green" Visibility="{x:Bind VM.MethodStatus.IsSuccess, Mode=OneWay, Converter={StaticResource VisibleWhenTrueConverter}, FallbackValue=Collapsed}"></TextBlock>
+            <TextBlock Text="FAILURE!" Foreground="Red" Visibility="{x:Bind VM.MethodStatus.IsFailure, Mode=OneWay, Converter={StaticResource VisibleWhenTrueConverter}, FallbackValue=Collapsed}"></TextBlock>
+            <TextBlock Text="{x:Bind VM.MethodStatus.StatusCode, Mode=OneWay}"></TextBlock>
+            <TextBlock Text="{x:Bind VM.MethodStatus.StatusText, Mode=OneWay}"></TextBlock>
+            <TextBlock Text="{x:Bind VM.MethodResult, Mode=OneWay}"></TextBlock>
+        </StackPanel>
+        <variableItemListView:VariableItemListView Grid.Row="5" VM="{x:Bind VM.VariableListViewModel}" BorderBrush="LightGray" 
                                                        BorderThickness="3" Margin="10" />
+        
     </Grid>
 
 </local:BackBasePage>

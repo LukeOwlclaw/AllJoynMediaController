@@ -31,7 +31,7 @@
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="deviceproviders:IProperty" >
                         <Border BorderThickness="0" BorderBrush="Black" CornerRadius="10" MinWidth="200">
-                            <Grid HorizontalAlignment="Left" MinWidth="200" MinHeight="200" MaxHeight="600" 
+                            <Grid HorizontalAlignment="Left" MinWidth="200" MinHeight="20" MaxHeight="600" 
                                   ScrollViewer.VerticalScrollBarVisibility="Visible">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="*"></RowDefinition>
@@ -57,7 +57,7 @@
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="deviceproviders:ISignal" >
                         <Border BorderThickness="0" BorderBrush="Black" CornerRadius="10" MinWidth="200">
-                            <Grid HorizontalAlignment="Left" MinWidth="200" MinHeight="200" MaxHeight="600" 
+                            <Grid HorizontalAlignment="Left" MinWidth="200" MinHeight="20" MaxHeight="600" 
                                   ScrollViewer.VerticalScrollBarVisibility="Visible">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="*"></RowDefinition>
@@ -83,7 +83,7 @@
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="deviceproviders:IMethod" >
                         <Border BorderThickness="0" BorderBrush="Black" CornerRadius="10" MinWidth="200">
-                            <Grid HorizontalAlignment="Left" MinWidth="200" MinHeight="200" MaxHeight="600" 
+                            <Grid HorizontalAlignment="Left" MinWidth="200" MinHeight="20" MaxHeight="600" 
                                   ScrollViewer.VerticalScrollBarVisibility="Visible">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="*"></RowDefinition>

@@ -10,6 +10,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -142,26 +143,135 @@ namespace OpenAlljoynExplorer.Pages
 
         private async void BackButton_Click(object sender, RoutedEventArgs e)
         {
+            On_BackRequested();
+            return;
 
-            //On_BackRequested();
-            //return;
-            var result = await VM.Method.InvokeAsync(new List<object> { "en" });
+        }
+
+        private Type GetType2(object item, Type t)
+        {
+
+            var info = t.GetTypeInfo();
+            if (info.IsAbstract)
+                return null;
+            Type usedType;
+            if (info.IsGenericType != info.IsGenericParameter)
+            {
+                int b = 3;
+                //continue;
+            }
+            if (info.FullName == "OpenAlljoynExplorer.App")
+                return null;
+            try
+            {
+                if (info.IsGenericTypeDefinition)
+                {
+                    Type[] genericTypes = new Type[info.GenericTypeParameters.Length];
+                    for (int i = 0; i < genericTypes.Length; i++)
+                    {
+                        genericTypes[i] = typeof(object);
+                    }
+                    usedType = t.MakeGenericType(genericTypes);
+                }
+                else
+                {
+                    usedType = t;
+                }
+
+                dynamic comClassInstance = Activator.CreateInstance(usedType);
+                comClassInstance.ComClassMethod();
+                var test = comClassInstance.ComClassFMethod(item);
+                if (test != null)
+                {
+                    return usedType;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+
+            }
+            return null;
+        }
+        private async Task<Type> GetType(object item)
+        {
+            var assemblies = await GetAssemblyListAsync();
+            foreach (Assembly a in assemblies)
+            {
+                foreach (Type t in a.GetTypes())
+                {
+                    Type wantedType = GetType2(item, t);
+                    if (wantedType != null)
+                        return wantedType;
+                }
+            }
+            return null;
+        }
+
+        internal void ReadAll()
+        {
+            // Define all properties/fields which we want PropertyReader to read
+            Dictionary<string, Type> PropMap = new Dictionary<string, Type> {
+                {"AboutData", typeof(IAboutData) },
+                {"Provider", typeof(IProvider) },
+                {"Objects", typeof(IList<IBusObject>) },
+                {"ChildObjects", typeof(IList<IBusObject>) },
+                {"Interfaces", typeof(IList<IInterface>) },
+                {"Methods", typeof(IReadOnlyList<IMethod>) },
+                {"Annotations", typeof(IReadOnlyDictionary<string, string>) },
+                {"OutSignature", typeof(IList<DeviceProviders.ParameterInfo>) },
+                {"InSignature", typeof(IList<DeviceProviders.ParameterInfo>) },
+                {"Services", typeof(IList<IService>) }, // Services in Provider
+                { nameof(VM.Method), typeof(IMethod)},
+                { "test", typeof(IList<ITypeDefinition>)}
+            };
+
+            var propertyReader = new PropertyReader
+            {
+                PropertyMap = PropMap,
+                Out = VM.VariableListViewModel
+            };
+
+            propertyReader.Read(VM.Method, nameof(VM.Method));
+            //propertyReader.Read(AllJoynTypeDefinition.CreateTypeDefintions("a{sv}") , "test");
+        }
+
+        private async void TestButton_Click(object sender, RoutedEventArgs e)
+        {
+            var result = await VM.Method.InvokeAsync(new List<object> { /*"en"*/ });
             //var result = await VM.Method.InvokeAsync(new List<object> {  });
             var status = result.Status as AllJoynStatus;
+
+            VM.MethodStatus = status;
 
             //var i1 = await FindInterface(new Dictionary<string, int> { { "string", 11} });
             //var i2 = await FindInterface(new Dictionary<string, object> { { "string", 11} });
             //var i3 = await FindInterface(new Dictionary<object, object> { { "string", 11} });
 
+            if (result?.Status == null)
+            {
+                return;
+            }
 
             ////var t1 = GetType2(new Dictionary<string, int> { { "string", 11} }, typeof(Dictionary<string,int>));
             ////var t2 = GetType2(new Dictionary<string, int> { { "string", 11} }, typeof(Dictionary<object,object>));
             ////var t3 = GetType2(new Dictionary<string, int> { { "string", 11} }, typeof(Dictionary<,>));
             if (result.Status.IsSuccess)
             {
+                StringBuilder sb = new StringBuilder();
+                foreach (var item in VM.Method.OutSignature)
+                {
+                    sb.Append($"{item.Name}:");
+                    sb.AppendLine($"");
+
+                }
+
+                VM.MethodResult = sb.ToString();
+                return;
+
                 var resultList2 = result.Values as IList<object>;
 
-                
+
 
                 foreach (var resultListItem in resultList2)
                 {
@@ -307,94 +417,6 @@ namespace OpenAlljoynExplorer.Pages
 
             //result.Status
 
-        }
-
-        private Type GetType2(object item, Type t)
-        {
-
-            var info = t.GetTypeInfo();
-            if (info.IsAbstract)
-                return null;
-            Type usedType;
-            if (info.IsGenericType != info.IsGenericParameter)
-            {
-                int b = 3;
-                //continue;
-            }
-            if (info.FullName == "OpenAlljoynExplorer.App")
-                return null;
-            try
-            {
-                if (info.IsGenericTypeDefinition)
-                {
-                    Type[] genericTypes = new Type[info.GenericTypeParameters.Length];
-                    for (int i = 0; i < genericTypes.Length; i++)
-                    {
-                        genericTypes[i] = typeof(object);
-                    }
-                    usedType = t.MakeGenericType(genericTypes);
-                }
-                else
-                {
-                    usedType = t;
-                }
-
-                dynamic comClassInstance = Activator.CreateInstance(usedType);
-                comClassInstance.ComClassMethod();
-                var test = comClassInstance.ComClassFMethod(item);
-                if (test != null)
-                {
-                    return usedType;
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex);
-
-            }
-            return null;
-        }
-        private async Task<Type> GetType(object item)
-        {
-            var assemblies = await GetAssemblyListAsync();
-            foreach (Assembly a in assemblies)
-            {
-                foreach (Type t in a.GetTypes())
-                {
-                    Type wantedType = GetType2(item, t);
-                    if (wantedType != null)
-                        return wantedType;
-                }
-            }
-            return null;
-        }
-
-        internal void ReadAll()
-        {
-            // Define all properties/fields which we want PropertyReader to read
-            Dictionary<string, Type> PropMap = new Dictionary<string, Type> {
-                {"AboutData", typeof(IAboutData) },
-                {"Provider", typeof(IProvider) },
-                {"Objects", typeof(IList<IBusObject>) },
-                {"ChildObjects", typeof(IList<IBusObject>) },
-                {"Interfaces", typeof(IList<IInterface>) },
-                {"Methods", typeof(IReadOnlyList<IMethod>) },
-                {"Annotations", typeof(IReadOnlyDictionary<string, string>) },
-                {"OutSignature", typeof(IList<DeviceProviders.ParameterInfo>) },
-                {"InSignature", typeof(IList<DeviceProviders.ParameterInfo>) },
-                {"Services", typeof(IList<IService>) }, // Services in Provider
-                { nameof(VM.Method), typeof(IMethod)},
-                { "test", typeof(IList<ITypeDefinition>)}
-            };
-
-            var propertyReader = new PropertyReader
-            {
-                PropertyMap = PropMap,
-                Out = VM.VariableListViewModel
-            };
-
-            propertyReader.Read(VM.Method, nameof(VM.Method));
-            //propertyReader.Read(AllJoynTypeDefinition.CreateTypeDefintions("a{sv}") , "test");
         }
     }
 }
