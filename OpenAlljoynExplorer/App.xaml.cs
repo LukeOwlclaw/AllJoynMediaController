@@ -1,4 +1,5 @@
-﻿using System;
+﻿//using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -34,7 +35,7 @@ namespace OpenAlljoynExplorer
             this.Suspending += OnSuspending;
         }
 
-        private void App_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        private void App_UnhandledException(object sender, Windows.UI.Xaml.UnhandledExceptionEventArgs e)
         {
             throw new NotImplementedException();
         }

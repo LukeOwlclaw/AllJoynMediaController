@@ -26,9 +26,7 @@ namespace OpenAlljoynExplorer.Pages
     /// </summary>
     public sealed partial class InterfaceListPage : BackBasePage
     {
-        public IList<IInterface> VM { get; set; }
-
-        public ServicePageController Controller { get; set; }
+        public InterfaceListModel VM { get; set; }
 
         public InterfaceListPage() : base()
         {
@@ -38,14 +36,12 @@ namespace OpenAlljoynExplorer.Pages
 
         private void InterfacePage_Loaded(object sender, RoutedEventArgs e)
         {
-            //Controller = new ServicePageController(VM);
-            //Controller.Start();
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             BackButton.IsEnabled = this.Frame.CanGoBack;
-            VM = (IList<IInterface>)e.Parameter;
+            VM = (InterfaceListModel)e.Parameter;
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
@@ -56,7 +52,8 @@ namespace OpenAlljoynExplorer.Pages
         private void ListView_IInterfaceClick(object sender, ItemClickEventArgs e)
         {
             IInterface allJoynInterface = e.ClickedItem as IInterface;
-            this.Frame.Navigate(typeof(InterfacePage), allJoynInterface);
+            var model = new InterfacePageModel { Service = VM.Service, Interface = allJoynInterface };
+            this.Frame.Navigate(typeof(InterfacePage), model);
         }
 
     }

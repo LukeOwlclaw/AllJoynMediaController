@@ -40,5 +40,7 @@ namespace OpenAlljoynExplorer.Models
             set { Set(value); }
         }
 
+        public IService Service { get; internal set; }
+        public IInterface Interface { get; internal set; }
     }
 }

@@ -27,6 +27,7 @@ namespace OpenAlljoynExplorer.Pages
     {
         public AllJoynModel VM { get; set; }
         public AllJoynController Controller { get; set; }
+        public bool DisableFavoriteNavigation { get; set; }
 
         public ServiceListPage()
         {
@@ -37,25 +38,27 @@ namespace OpenAlljoynExplorer.Pages
 
         private void ServiceListPage_Loaded(object sender, RoutedEventArgs e)
         {
-            Controller = new AllJoynController(VM);
-            // for testing, go directly to this AllJoyn interface:
-            Controller.GoTo(frame: this.Frame, deviceId: "2e1b9ed0-8429-4934-a566-9c44cda28b99", objectPath: "/About",
-                interfaceName: "org.alljoyn.About", methodName: "GetAboutData");
-            //interfaceName: "org.alljoyn.About", methodName: "GetObjectDescription");
+            Controller = new AllJoynController(VM, this.Frame);
+            //// for testing, go directly to this AllJoyn interface:
+            //Controller.GoTo(frame: this.Frame, deviceId: "2e1b9ed0-8429-4934-a566-9c44cda28b99", objectPath: "/About",
+            //    interfaceName: "org.alljoyn.About", methodName: "GetAboutData");
+            ////interfaceName: "org.alljoyn.About", methodName: "GetObjectDescription");
 
-            // AllPlay MediaPlayer
-            Controller.GoTo(frame: this.Frame, deviceId: "Willy", objectPath: "/net/allplay/MediaPlayer",
-                interfaceName: "net.allplay.MediaPlayer", methodName: "GetPlaylist");
-            Controller.GoTo(frame: this.Frame, deviceId: "Aploris", objectPath: "/net/allplay/MediaPlayer",
-                interfaceName: "net.allplay.MediaPlayer", methodName: "GetPlaylist");
+            //// AllPlay MediaPlayer
+            //Controller.GoTo(frame: this.Frame, deviceId: "Willy", objectPath: "/net/allplay/MediaPlayer",
+            //    interfaceName: "net.allplay.MediaPlayer", methodName: "GetPlaylist");
+            //Controller.GoTo(frame: this.Frame, deviceId: "Aploris", objectPath: "/net/allplay/MediaPlayer",
+            //    interfaceName: "net.allplay.MediaPlayer", methodName: "GetPlaylist");
 
 
-            Controller.Start();
+            Controller.Start(!DisableFavoriteNavigation);
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
+            if (e.NavigationMode == NavigationMode.Back)
+                DisableFavoriteNavigation = true;
         }
 
         private void ListView_ItemClick(object sender, ItemClickEventArgs e)
@@ -63,6 +66,11 @@ namespace OpenAlljoynExplorer.Pages
             AllJoynService allJoynService = e.ClickedItem as AllJoynService;
             this.Frame.Navigate(typeof(ObjectListPage), allJoynService);
 
+        }
+
+        private void RefreshButton_Click(object sender, RoutedEventArgs e)
+        {
+            Frame.Navigate(this.GetType());
         }
     }
 }

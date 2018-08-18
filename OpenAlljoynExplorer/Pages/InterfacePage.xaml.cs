@@ -27,7 +27,7 @@ namespace OpenAlljoynExplorer.Pages
     /// </summary>
     public sealed partial class InterfacePage : BackBasePage
     {
-        public IInterface VM { get; set; }
+        public InterfacePageModel VM { get; set; }
 
         public ServicePageController Controller { get; set; }
 
@@ -46,7 +46,7 @@ namespace OpenAlljoynExplorer.Pages
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             BackButton.IsEnabled = this.Frame.CanGoBack;
-            VM = (IInterface)e.Parameter;
+            VM = (InterfacePageModel)e.Parameter;
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
@@ -57,7 +57,8 @@ namespace OpenAlljoynExplorer.Pages
         private void ListView_MethodClick(object sender, ItemClickEventArgs e)
         {
             var method = e.ClickedItem as IMethod;
-            this.Frame.Navigate(typeof(MethodPage), method);
+            var model = new MethodModel { Service = VM.Service, Interface = VM.Interface, Method = method };
+            this.Frame.Navigate(typeof(MethodPage), model);
         }
 
         private void ListView_SignalClick(object sender, ItemClickEventArgs e)

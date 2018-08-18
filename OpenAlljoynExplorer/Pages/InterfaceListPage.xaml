@@ -23,7 +23,7 @@
             <Button x:Name="BackButton" Click="BackButton_Click" Style="{StaticResource NavigationBackButtonNormalStyle}"/>
 
             <TextBlock>Interfaces of this AllJoyn object</TextBlock>
-            <ListView ItemClick="ListView_IInterfaceClick" IsItemClickEnabled="True" ItemsSource="{x:Bind VM}">
+            <ListView ItemClick="ListView_IInterfaceClick" IsItemClickEnabled="True" ItemsSource="{x:Bind VM.Interfaces}">
                 <ListView.ItemsPanel>
                     <ItemsPanelTemplate>
                         <controls:WrapPanel />

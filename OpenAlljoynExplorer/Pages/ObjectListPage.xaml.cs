@@ -66,7 +66,8 @@ namespace OpenAlljoynExplorer.Pages
         private void ListView_IBusObjectClick(object sender, ItemClickEventArgs e)
         {
             IBusObject busObject = e.ClickedItem as IBusObject;
-            this.Frame.Navigate(typeof(InterfaceListPage), busObject.Interfaces);
+            var model = new InterfaceListModel { Service = VM.Service, Interfaces = busObject.Interfaces };
+            this.Frame.Navigate(typeof(InterfaceListPage), model);
         }
 
     }

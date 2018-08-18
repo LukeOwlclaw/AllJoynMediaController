@@ -14,6 +14,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Storage;
 using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -60,7 +61,8 @@ namespace OpenAlljoynExplorer.Pages
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             BackButton.IsEnabled = this.Frame.CanGoBack;
-            VM = new MethodModel { Method = (IMethod)e.Parameter };
+            //VM = new MethodModel { Method = (IMethod)e.Parameter };
+            VM = (MethodModel)e.Parameter;
         }
 
         private async Task<IEnumerable<Assembly>> GetAssemblyListAsync()
@@ -416,6 +418,24 @@ namespace OpenAlljoynExplorer.Pages
 
 
             //result.Status
+
+        }
+
+        private void AddFavoriteButton_Click(object sender, RoutedEventArgs e)
+        {
+            var deviceId = VM.Service.AboutData.DeviceId;
+            var objectPath  = VM.Interface.BusObject.Path;
+            var interfaceName = VM.Interface.Name;
+            var methodName = VM.Method.Name;
+
+            var favorite = new Favorite {
+                DeviceId = VM.Service.AboutData.DeviceId,
+                ObjectPath = VM.Interface.BusObject.Path,
+                InterfaceName = VM.Interface.Name,
+                MethodName = VM.Method.Name
+            };
+
+            Favorite.Add(favorite);
 
         }
     }

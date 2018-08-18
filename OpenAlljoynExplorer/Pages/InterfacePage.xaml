@@ -22,7 +22,7 @@
         <StackPanel>
             <Button x:Name="BackButton" Click="BackButton_Click" Style="{StaticResource NavigationBackButtonNormalStyle}"/>
             <TextBlock>Properties of this interface</TextBlock>
-            <ListView ItemClick="ListView_PropertyClick" IsItemClickEnabled="True"  ItemsSource="{x:Bind VM.Properties}">
+            <ListView ItemClick="ListView_PropertyClick" IsItemClickEnabled="True"  ItemsSource="{x:Bind VM.Interface.Properties}">
                 <ListView.ItemsPanel>
                     <ItemsPanelTemplate>
                         <controls:WrapPanel />
@@ -48,7 +48,7 @@
                 </ListView.ItemTemplate>
             </ListView>
             <TextBlock>Signals of this interface</TextBlock>
-            <ListView ItemClick="ListView_SignalClick" IsItemClickEnabled="True"  ItemsSource="{x:Bind VM.Signals}">
+            <ListView ItemClick="ListView_SignalClick" IsItemClickEnabled="True"  ItemsSource="{x:Bind VM.Interface.Signals}">
                 <ListView.ItemsPanel>
                     <ItemsPanelTemplate>
                         <controls:WrapPanel />
@@ -74,7 +74,7 @@
                 </ListView.ItemTemplate>
             </ListView>
             <TextBlock>Methods of this interface</TextBlock>
-            <ListView ItemClick="ListView_MethodClick" IsItemClickEnabled="True"  ItemsSource="{x:Bind VM.Methods}">
+            <ListView ItemClick="ListView_MethodClick" IsItemClickEnabled="True"  ItemsSource="{x:Bind VM.Interface.Methods}">
                 <ListView.ItemsPanel>
                     <ItemsPanelTemplate>
                         <controls:WrapPanel />
