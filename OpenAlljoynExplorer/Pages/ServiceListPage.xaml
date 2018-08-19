@@ -15,10 +15,12 @@
     <Page.Resources>
         <converters:VisibleWhenZeroConverter x:Key="VisibleWhenZeroConverter"  />
         <converters:VisibleWhenNotNullConverter x:Key="VisibleWhenNotNullConverter"  />
+        <converters:VisibleWhenTrueConverter x:Key="VisibleWhenTrueConverter"  />
     </Page.Resources>
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
@@ -28,7 +30,25 @@
             <Button x:Name="RefreshButton" Click="RefreshButton_Click" Content="Refresh" />
         </StackPanel>
 
-        <ListView ItemClick="ListView_ItemClick" IsItemClickEnabled="True"  Grid.Row="2" ItemsSource="{x:Bind VM.AllJoynServices}" BorderBrush="LightGray" BorderThickness="3" Margin="0" ScrollViewer.VerticalScrollBarVisibility="Visible">
+        <ListView Grid.Row="2" ItemClick="FavoriteList_ItemClick"  IsItemClickEnabled="True" 
+                  RightTapped="FavoriteList_RightClick" IsRightTapEnabled="True" 
+                  ItemsSource="{x:Bind VM.Favorites, Mode=OneWay}">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="models:Favorite" >
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="{x:Bind MethodName}" />
+                        <TextBlock Text="{x:Bind ObjectPath}" />
+                        <TextBlock Text="{x:Bind InterfaceName}" />
+                        <TextBlock Text="{x:Bind DeviceId}" />
+                        <TextBlock Text="Is available!" Foreground="Green" Visibility="{x:Bind IsAvailable, Mode=OneWay, Converter={StaticResource VisibleWhenTrueConverter}, FallbackValue=Collapsed}"></TextBlock>
+                    </StackPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <ListView Grid.Row="3" ItemClick="ListView_ItemClick" IsItemClickEnabled="True"
+                  ItemsSource="{x:Bind VM.AllJoynServices}" BorderBrush="LightGray" BorderThickness="3" Margin="0"
+                  ScrollViewer.VerticalScrollBarVisibility="Visible">
             <ListView.Header>
                 <TextBlock Visibility="{x:Bind VM.AllJoynServices.Count, Mode=OneWay, Converter={StaticResource VisibleWhenZeroConverter}}">
                 <Run Text="There are no items." />

@@ -42,5 +42,10 @@ namespace OpenAlljoynExplorer.Models
 
         public IService Service { get; internal set; }
         public IInterface Interface { get; internal set; }
+        public string InvocationParametersAsJson
+        {
+            get { return Get<string>(); }
+            set { Set(value); }
+        }
     }
 }

@@ -32,6 +32,12 @@ namespace OpenAlljoynExplorer.Models
             set { Set(value); }
         }
 
+        public ObservableCollectionThreadSafe<Favorite> Favorites
+        {
+            get { return Get<ObservableCollectionThreadSafe<Favorite>>(); }
+            set { Set(value); }
+        }
+
         //public ObservableCollectionThreadSafe<VariableType> Items
         //{
         //    get { return Get<ObservableCollectionThreadSafe<VariableType>>(); }

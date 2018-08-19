@@ -1,19 +1,8 @@
 ﻿using OpenAlljoynExplorer.Controllers;
 using OpenAlljoynExplorer.Models;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using VariableItemListView.Models;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+using VariableItemListView.Support;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -27,11 +16,13 @@ namespace OpenAlljoynExplorer.Pages
     {
         public AllJoynModel VM { get; set; }
         public AllJoynController Controller { get; set; }
-        public bool DisableFavoriteNavigation { get; set; }
+        public bool DisableFavoriteNavigation { get; set; } = true;
 
         public ServiceListPage()
         {
             VM = new AllJoynModel();
+            VM.Favorites = new ObservableCollectionThreadSafe<Favorite>();
+            VM.Favorites.AddRange(Favorite.GetAll());
             this.InitializeComponent();
             Loaded += ServiceListPage_Loaded;
         }
@@ -49,7 +40,6 @@ namespace OpenAlljoynExplorer.Pages
             //    interfaceName: "net.allplay.MediaPlayer", methodName: "GetPlaylist");
             //Controller.GoTo(frame: this.Frame, deviceId: "Aploris", objectPath: "/net/allplay/MediaPlayer",
             //    interfaceName: "net.allplay.MediaPlayer", methodName: "GetPlaylist");
-
 
             Controller.Start(!DisableFavoriteNavigation);
         }
@@ -71,6 +61,31 @@ namespace OpenAlljoynExplorer.Pages
         private void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
             Frame.Navigate(this.GetType());
+        }
+
+        private async void FavoriteList_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            var fav = e.ClickedItem as Favorite;
+            if (fav.IsAvailable == false)
+                return;
+            var methodModel = new MethodModel { Service = fav.Service, Interface = fav.Interface, Method = fav.Method };
+            await Support.Dispatcher.Dispatch(() =>
+            {
+                Frame.Navigate(typeof(MethodPage), methodModel);
+            });
+        }
+
+        private void FavoriteList_RightClick(object sender, Windows.UI.Xaml.Input.RightTappedRoutedEventArgs e)
+        {
+            var fav = ((FrameworkElement)e.OriginalSource).DataContext as Favorite;
+            var removed = Favorite.Remove(fav);
+            if (removed)
+            {
+                var d = Support.Dispatcher.Dispatch(() =>
+                {
+                    VM.Favorites.Remove(fav);
+                });
+            }
         }
     }
 }

@@ -27,6 +27,17 @@ namespace VariableItemListView.Support
             Initialize();
         }
 
+        public void AddRange(List<T> list)
+        {
+            lock (syncLock)
+            {
+                foreach (var item in list)
+                {
+                    base.Add(item);
+                }
+            }
+        }
+
         private void Initialize()
         {
             syncLock = new object();

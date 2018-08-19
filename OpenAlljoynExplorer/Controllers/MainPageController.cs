@@ -43,8 +43,10 @@ namespace OpenAlljoynExplorer.Controllers
             try
             {
                 service = new AllJoynService(args.Service);
+                await Favorite.SetAvailableFavorite(VM.Favorites, service);
+
                 MethodModel methodModel = null;
-                if (favoriteNavigationEnabled && ((methodModel = Favorite.GetFavoriteModel(service)) != null))
+                if (favoriteNavigationEnabled && (methodModel = Favorite.GetFavoriteModel(service)) != null)
                 {
                     await Dispatcher.Dispatch(() =>
                     {
