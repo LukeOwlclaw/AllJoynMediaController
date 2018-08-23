@@ -37,7 +37,8 @@ namespace OpenAlljoynExplorer
 
         private void App_UnhandledException(object sender, Windows.UI.Xaml.UnhandledExceptionEventArgs e)
         {
-            throw new NotImplementedException();
+            var dialog = new Windows.UI.Popups.MessageDialog(e.ToString(), "Sorry, something went very wrong");
+            var asyncNoWait = dialog.ShowAsync();
         }
 
         /// <summary>

@@ -1,28 +1,12 @@
-﻿using DeviceProviders;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using DeviceProviders;
 using Newtonsoft.Json.Linq;
 using OpenAlljoynExplorer.Controllers;
 using OpenAlljoynExplorer.Models;
 using OpenAlljoynExplorer.Support;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Text;
-using System.Threading.Tasks;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.Storage;
-using Windows.System;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
@@ -47,18 +31,8 @@ namespace OpenAlljoynExplorer.Pages
 
         private void MethodPage_Loaded(object sender, RoutedEventArgs e)
         {
-            //Controller = new ServicePageController(VM);
-            //Controller.Start();
-
             ReadAll();
-
             VM.InvocationParametersAsJson = GetInSignatureAsJson();
-
-            //foreach (var inParameter in VM.InSignature)
-            //{
-            //    //inParameter.Name;
-            //    inParameter.TypeDefinition.
-            //}
         }
 
         private string GetInSignatureAsJson()
@@ -147,153 +121,12 @@ namespace OpenAlljoynExplorer.Pages
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             BackButton.IsEnabled = this.Frame.CanGoBack;
-            //VM = new MethodModel { Method = (IMethod)e.Parameter };
             VM = (MethodModel)e.Parameter;
         }
 
-        private async Task<IEnumerable<Assembly>> GetAssemblyListAsync()
-        {
-            var folder = Windows.ApplicationModel.Package.Current.InstalledLocation;
-
-            List<Assembly> assemblies = new List<Assembly>();
-            foreach (Windows.Storage.StorageFile file in await folder.GetFilesAsync())
-            {
-                try
-                {
-                    if (file.FileType == ".dll" || file.FileType == ".exe")
-                    {
-                        AssemblyName name = new AssemblyName()
-                        {
-                            Name = Path.GetFileNameWithoutExtension(file.Name)
-                        };
-                        Assembly asm = Assembly.Load(name);
-                        assemblies.Add(asm);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine(ex);
-                }
-            }
-
-            return assemblies;
-        }
-
-        private async Task<Type> FindInterface(object unknown)
-        {
-            try
-            {
-                var assemblies = await GetAssemblyListAsync();
-                foreach (Assembly a in assemblies)
-                {
-                    Type wantedType = FindInterfaceForAssembly(unknown, a);
-                    if (wantedType != null)
-                        return wantedType;
-
-                }
-            }
-            catch (Exception) { }
-            return null;
-        }
-
-        private Type FindInterfaceForAssembly(object unknown, Assembly interopAssembly)
-        {
-            Func<Type, bool> implementsInterface = iface =>
-            {
-                try
-                {
-                    Marshal.GetComInterfaceForObject(unknown, iface);
-                    return true;
-                }
-                catch (InvalidCastException)
-                {
-                    return false;
-                }
-            };
-
-            List<Type> supportedInterfaces = interopAssembly.
-                GetTypes().
-                Where(t => t.GetTypeInfo().IsInterface).
-                Where(implementsInterface).
-                ToList();
-
-            return supportedInterfaces.FirstOrDefault();
-        }
-
-        //public static unsafe byte[] Binarize(object obj, int size)
-        //{
-        //    var r = new byte[size];
-        //    var rf = __makeref(obj);
-        //    var a = **(IntPtr**)(&rf);
-        //    Marshal.Copy(a, r, 0, size);
-        //    return res;
-        //}
-
-        private async void BackButton_Click(object sender, RoutedEventArgs e)
+        private void BackButton_Click(object sender, RoutedEventArgs e)
         {
             On_BackRequested();
-            return;
-
-        }
-
-        private Type GetType2(object item, Type t)
-        {
-
-            var info = t.GetTypeInfo();
-            if (info.IsAbstract)
-                return null;
-            Type usedType;
-            if (info.IsGenericType != info.IsGenericParameter)
-            {
-                int b = 3;
-                //continue;
-            }
-            if (info.FullName == "OpenAlljoynExplorer.App")
-                return null;
-            try
-            {
-                if (info.IsGenericTypeDefinition)
-                {
-                    Type[] genericTypes = new Type[info.GenericTypeParameters.Length];
-                    for (int i = 0; i < genericTypes.Length; i++)
-                    {
-                        genericTypes[i] = typeof(object);
-                    }
-                    usedType = t.MakeGenericType(genericTypes);
-                }
-                else
-                {
-                    usedType = t;
-                }
-
-                dynamic comClassInstance = Activator.CreateInstance(usedType);
-                comClassInstance.ComClassMethod();
-                var test = comClassInstance.ComClassFMethod(item);
-                if (test != null)
-                {
-                    return usedType;
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex);
-
-            }
-            return null;
-        }
-        private async Task<Type> GetType(object item)
-        {
-            var assemblies = await GetAssemblyListAsync();
-            foreach (Assembly a in assemblies)
-            {
-                foreach (Type t in a.GetTypes())
-                {
-                    Type wantedType = GetType2(item, t);
-                    if (wantedType != null)
-                        return wantedType;
-                }
-            }
-            return null;
         }
 
         internal void ReadAll()
@@ -322,6 +155,236 @@ namespace OpenAlljoynExplorer.Pages
 
             propertyReader.Read(VM.Method, nameof(VM.Method));
             //propertyReader.Read(AllJoynTypeDefinition.CreateTypeDefintions("a{sv}") , "test");
+        }
+
+        private JToken GetValueAsJson(ITypeDefinition typeDefinition, object value)
+        {
+            switch (typeDefinition.Type)
+            {
+                case TypeId.Invalid:
+                    break;
+                case TypeId.Boolean:
+                    break;
+                case TypeId.Double:
+                    break;
+                case TypeId.Dictionary:
+                    var dictionary = value as IList<KeyValuePair<object, object>>;
+                    var returnDictionary = new Dictionary<JToken, JToken>(dictionary.Count);
+                    foreach (var item in dictionary)
+                    {
+                        var itemKey = GetValueAsJson(typeDefinition.KeyType, item.Key);
+                        var itemValue = GetValueAsJson(typeDefinition.ValueType, item.Value);
+                        returnDictionary.Add(itemKey, itemValue);
+                    }
+                    return JToken.FromObject(returnDictionary);
+                    break;
+                case TypeId.Signature:
+                    break;
+                case TypeId.Int32:
+                    break;
+                case TypeId.Int16:
+                    break;
+                case TypeId.ObjectPath:
+                    break;
+                case TypeId.Uint16:
+                    break;
+                case TypeId.Struct:
+                    break;
+                case TypeId.String:
+                    return JToken.FromObject(value ?? "\0");
+                    break;
+                case TypeId.Uint64:
+                    break;
+                case TypeId.Uint32:
+                    break;
+                case TypeId.Variant:
+                    var variant = value as AllJoynMessageArgVariant;
+                    if (variant == null) {
+                        return JToken.FromObject("Got invalid variant");
+                    }
+                    return GetValueAsJson(variant.TypeDefinition, variant.Value);
+                    break;
+                case TypeId.Int64:
+                    return JToken.FromObject(value ?? Int64.MinValue);
+                    break;
+                case TypeId.Uint8:
+                    break;
+                case TypeId.ArrayByte:
+                    break;
+                case TypeId.ArrayByteMask:
+                    break;
+                case TypeId.BooleanArray:
+                    break;
+                case TypeId.DoubleArray:
+                    break;
+                case TypeId.Int32Array:
+                    break;
+                case TypeId.Int16Array:
+                    break;
+                case TypeId.Uint16Array:
+                    break;
+                case TypeId.Uint64Array:
+                    break;
+                case TypeId.Uint32Array:
+                    break;
+                case TypeId.VariantArray:
+                    break;
+                case TypeId.Int64Array:
+                    break;
+                case TypeId.Uint8Array:
+                    break;
+                case TypeId.SignatureArray:
+                    break;
+                case TypeId.ObjectPathArray:
+                    break;
+                case TypeId.StringArray:
+                    break;
+                case TypeId.StructArray:
+                    //TestObjectType(value);
+                    var fields = typeDefinition.Fields as IReadOnlyList<ITypeDefinition>;
+                    var values = value as IList<object>;
+                    var returnList = new List<JToken[]>(values.Count);
+                    foreach (AllJoynMessageArgStructure structEntry  in values)
+                    {
+                        if (structEntry.Count != fields.Count)
+                        {
+                            return JToken.FromObject($"Got {values.Count} values in struct entry, expected {fields.Count} ");
+                        }
+                        var entryArray = new JToken[fields.Count];
+                        for (int i = 0; i < fields.Count; i++)
+                        {
+                            var structField = fields[i];
+                            var structValue = structEntry[i];
+                            entryArray[i] = GetValueAsJson(structField, structValue);
+                        }
+                        returnList.Add(entryArray);
+                    }
+                    return JToken.FromObject(returnList);
+                    if (fields.Count != values.Count)
+                    {
+                        return JToken.FromObject($"Got {values.Count} values in struct, expected {fields.Count} ");
+                    }
+                    var returnArray2 = new JToken[fields.Count];
+
+                    for (int i = 0; i < fields.Count; i++)
+                    {
+                        var structField = fields[i];
+                        var structValue = values[i];
+                        returnArray2[i] = GetValueAsJson(structField, structValue);
+                    }
+                    return JToken.FromObject(returnArray2);
+                default:
+                    throw new NotImplementedException();
+            }
+            return null;
+        }
+            private async void InvokeButton_Click(object sender, RoutedEventArgs e)
+        {
+            List<object> inArgs = GetInArgumentsAsObjectList();
+            var result = await VM.Method.InvokeAsync(inArgs);
+            var status = result.Status as AllJoynStatus;
+            VM.MethodStatus = status;
+            if (result?.Status == null)
+            {
+                return;
+            }
+
+            if (result.Status.IsSuccess)
+            {
+                if (result.Values.Count != VM.Method.OutSignature.Count)
+                {
+                    VM.MethodResult = $"Got {result.Values.Count} return values, expected {VM.Method.OutSignature.Count}";
+                    return;
+                }
+
+                var values = result.Values as IList<object>;
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine();
+                for (int i = 0; i < VM.Method.OutSignature.Count; i++)
+                {
+                    ParameterInfo signature = VM.Method.OutSignature[i];
+                    var value = result.Values[i];
+                    var valueAsJson = GetValueAsJson(signature.TypeDefinition, value);
+                    sb.AppendLine($"-->{signature.Name}: {valueAsJson}");
+                }
+
+                VM.MethodResult = sb.ToString();
+                return;
+            }
+        }
+
+        private List<object> GetInArgumentsAsObjectList()
+        {
+            //VM.InvocationParametersAsJson
+            return new List<object> { };
+        }
+
+        private void TestObjectType(object j)
+        {
+            var j00 = j as IList<object>;
+
+            var j01 = j as IDictionary<string, string>;
+            var j02 = j as IDictionary<string, object>;
+            var j03 = j as IDictionary<string, object[]>;
+            var j04 = j as IDictionary<string, object[,]>;
+            var j05 = j as IDictionary<object, string>;
+            var j06 = j as IDictionary<object, object>;
+            var j07 = j as IDictionary<object, object[]>;
+            var j08 = j as IDictionary<object, object[,]>;
+            var j09 = j as IDictionary<object[], string>;
+            var j10 = j as IDictionary<object[], object>;
+            var j11 = j as IDictionary<object[], object[]>;
+            var j12 = j as IDictionary<object[], object[,]>;
+            var j13 = j as IDictionary<object[,], string>;
+            var j14 = j as IDictionary<object[,], object>;
+            var j15 = j as IDictionary<object[,], object[]>;
+            var j16 = j as IDictionary<object[,], object[,]>;
+            var j17 = j as IDictionary<object, string>;
+            var j18 = j as IDictionary<object[], string>;
+            var j19 = j as IDictionary<object[,], string>;
+
+            var k01 = j as IReadOnlyDictionary<string, string>;
+            var k02 = j as IReadOnlyDictionary<string, object>;
+            var k03 = j as IReadOnlyDictionary<string, object[]>;
+            var k04 = j as IReadOnlyDictionary<string, object[,]>;
+            var k05 = j as IReadOnlyDictionary<object, string>;
+            var k06 = j as IReadOnlyDictionary<object, object>;
+            var k07 = j as IReadOnlyDictionary<object, object[]>;
+            var k08 = j as IReadOnlyDictionary<object, object[,]>;
+            var k09 = j as IReadOnlyDictionary<object[], string>;
+            var k10 = j as IReadOnlyDictionary<object[], object>;
+            var k11 = j as IReadOnlyDictionary<object[], object[]>;
+            var k12 = j as IReadOnlyDictionary<object[], object[,]>;
+            var k13 = j as IReadOnlyDictionary<object[,], string>;
+            var k14 = j as IReadOnlyDictionary<object[,], object>;
+            var k15 = j as IReadOnlyDictionary<object[,], object[]>;
+            var k16 = j as IReadOnlyDictionary<object[,], object[,]>;
+            var k17 = j as IReadOnlyDictionary<object, string>;
+            var k18 = j as IReadOnlyDictionary<object[], string>;
+            var k19 = j as IReadOnlyDictionary<object[,], string>;
+
+
+            var l01 = j as IList<KeyValuePair<string, string>>;
+            var l02 = j as IList<KeyValuePair<string, object>>;
+            var l03 = j as IList<KeyValuePair<string, object[]>>;
+            var l04 = j as IList<KeyValuePair<string, object[,]>>;
+            var l05 = j as IList<KeyValuePair<object, string>>;
+            var l06 = j as IList<KeyValuePair<object, object>>;
+            var l07 = j as IList<KeyValuePair<object, object[]>>;
+            var l08 = j as IList<KeyValuePair<object, object[,]>>;
+            var l09 = j as IList<KeyValuePair<object[], string>>;
+            var l10 = j as IList<KeyValuePair<object[], object>>;
+            var l11 = j as IList<KeyValuePair<object[], object[]>>;
+            var l12 = j as IList<KeyValuePair<object[], object[,]>>;
+            var l13 = j as IList<KeyValuePair<object[,], string>>;
+            var l14 = j as IList<KeyValuePair<object[,], object>>;
+            var l15 = j as IList<KeyValuePair<object[,], object[]>>;
+            var l16 = j as IList<KeyValuePair<object[,], object[,]>>;
+            var l17 = j as IList<KeyValuePair<object, string>>;
+            var l18 = j as IList<KeyValuePair<object[], string>>;
+            var l19 = j as IList<KeyValuePair<object[,], string>>;
+
+            System.Diagnostics.Debugger.Break();
         }
 
         private async void TestButton_Click(object sender, RoutedEventArgs e)
@@ -382,67 +445,7 @@ namespace OpenAlljoynExplorer.Pages
                             }
                         }
 
-
-                        var j01 = j as IDictionary<string, string>;
-                        var j02 = j as IDictionary<string, object>;
-                        var j03 = j as IDictionary<string, object[]>;
-                        var j04 = j as IDictionary<string, object[,]>;
-                        var j05 = j as IDictionary<object, string>;
-                        var j06 = j as IDictionary<object, object>;
-                        var j07 = j as IDictionary<object, object[]>;
-                        var j08 = j as IDictionary<object, object[,]>;
-                        var j09 = j as IDictionary<object[], string>;
-                        var j10 = j as IDictionary<object[], object>;
-                        var j11 = j as IDictionary<object[], object[]>;
-                        var j12 = j as IDictionary<object[], object[,]>;
-                        var j13 = j as IDictionary<object[,], string>;
-                        var j14 = j as IDictionary<object[,], object>;
-                        var j15 = j as IDictionary<object[,], object[]>;
-                        var j16 = j as IDictionary<object[,], object[,]>;
-                        var j17 = j as IDictionary<object, string>;
-                        var j18 = j as IDictionary<object[], string>;
-                        var j19 = j as IDictionary<object[,], string>;
-
-                        var k01 = j as IReadOnlyDictionary<string, string>;
-                        var k02 = j as IReadOnlyDictionary<string, object>;
-                        var k03 = j as IReadOnlyDictionary<string, object[]>;
-                        var k04 = j as IReadOnlyDictionary<string, object[,]>;
-                        var k05 = j as IReadOnlyDictionary<object, string>;
-                        var k06 = j as IReadOnlyDictionary<object, object>;
-                        var k07 = j as IReadOnlyDictionary<object, object[]>;
-                        var k08 = j as IReadOnlyDictionary<object, object[,]>;
-                        var k09 = j as IReadOnlyDictionary<object[], string>;
-                        var k10 = j as IReadOnlyDictionary<object[], object>;
-                        var k11 = j as IReadOnlyDictionary<object[], object[]>;
-                        var k12 = j as IReadOnlyDictionary<object[], object[,]>;
-                        var k13 = j as IReadOnlyDictionary<object[,], string>;
-                        var k14 = j as IReadOnlyDictionary<object[,], object>;
-                        var k15 = j as IReadOnlyDictionary<object[,], object[]>;
-                        var k16 = j as IReadOnlyDictionary<object[,], object[,]>;
-                        var k17 = j as IReadOnlyDictionary<object, string>;
-                        var k18 = j as IReadOnlyDictionary<object[], string>;
-                        var k19 = j as IReadOnlyDictionary<object[,], string>;
-
-
-                        var l01 = j as IList<KeyValuePair<string, string>>;
-                        var l02 = j as IList<KeyValuePair<string, object>>;
-                        var l03 = j as IList<KeyValuePair<string, object[]>>;
-                        var l04 = j as IList<KeyValuePair<string, object[,]>>;
-                        var l05 = j as IList<KeyValuePair<object, string>>;
-                        var l06 = j as IList<KeyValuePair<object, object>>;
-                        var l07 = j as IList<KeyValuePair<object, object[]>>;
-                        var l08 = j as IList<KeyValuePair<object, object[,]>>;
-                        var l09 = j as IList<KeyValuePair<object[], string>>;
-                        var l10 = j as IList<KeyValuePair<object[], object>>;
-                        var l11 = j as IList<KeyValuePair<object[], object[]>>;
-                        var l12 = j as IList<KeyValuePair<object[], object[,]>>;
-                        var l13 = j as IList<KeyValuePair<object[,], string>>;
-                        var l14 = j as IList<KeyValuePair<object[,], object>>;
-                        var l15 = j as IList<KeyValuePair<object[,], object[]>>;
-                        var l16 = j as IList<KeyValuePair<object[,], object[,]>>;
-                        var l17 = j as IList<KeyValuePair<object, string>>;
-                        var l18 = j as IList<KeyValuePair<object[], string>>;
-                        var l19 = j as IList<KeyValuePair<object[,], string>>;
+                        
                     }
 
                     //j.ToString();
@@ -510,11 +513,12 @@ namespace OpenAlljoynExplorer.Pages
         private void AddFavoriteButton_Click(object sender, RoutedEventArgs e)
         {
             var deviceId = VM.Service.AboutData.DeviceId;
-            var objectPath  = VM.Interface.BusObject.Path;
+            var objectPath = VM.Interface.BusObject.Path;
             var interfaceName = VM.Interface.Name;
             var methodName = VM.Method.Name;
 
-            var favorite = new Favorite {
+            var favorite = new Favorite
+            {
                 DeviceId = VM.Service.AboutData.DeviceId,
                 ObjectPath = VM.Interface.BusObject.Path,
                 InterfaceName = VM.Interface.Name,

@@ -33,7 +33,6 @@ namespace OpenAlljoynExplorer.Controllers
 
         private void ServiceDropped(IProvider sender, ServiceDroppedEventArgs args)
         {
-            //throw new NotImplementedException();
         }
 
 

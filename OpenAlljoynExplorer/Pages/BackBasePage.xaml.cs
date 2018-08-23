@@ -28,10 +28,12 @@ namespace OpenAlljoynExplorer.Pages
             this.InitializeComponent();
 
             KeyboardAccelerator GoBack = new KeyboardAccelerator();
-            GoBack.Key = VirtualKey.GoBack;
+            //GoBack.Key = VirtualKey.GoBack;
             GoBack.Invoked += BackInvoked;
-            KeyboardAccelerator AltLeft = new KeyboardAccelerator();
-            AltLeft.Key = VirtualKey.Left;
+            KeyboardAccelerator AltLeft = new KeyboardAccelerator
+            {
+                Key = VirtualKey.Left
+            };
             AltLeft.Invoked += BackInvoked;
             this.KeyboardAccelerators.Add(GoBack);
             this.KeyboardAccelerators.Add(AltLeft);
