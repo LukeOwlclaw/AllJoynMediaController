@@ -92,7 +92,7 @@ namespace OpenAlljoynExplorer.Models
             {
                 if (availableService.Service.AboutData.DeviceId == favorite.DeviceId)
                 {
-                    var navigationObject = availableService.Service.Objects.FirstOrDefault(o => o.Path == favorite.ObjectPath);
+                    var navigationObject = availableService?.Service?.Objects?.FirstOrDefault(o => o != null & o.Path == favorite.ObjectPath);
                     if (navigationObject?.Interfaces != null)
                     {
                         var navigationInterface = navigationObject.Interfaces.FirstOrDefault(i => i.Name == favorite.InterfaceName);

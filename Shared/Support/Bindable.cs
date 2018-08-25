@@ -29,9 +29,9 @@ namespace Shared.Support
             // which is not default(T), it will not work as expected
             if (default(T) != null && !default(T).Equals(defaultValue))
                 Debug.Assert(defaultValue is System.Nullable, "Default value only works as expected for nullable types! Check bindable " + name);
+
 #endif
-            object value = null;
-            if (mProperties.TryGetValue(name, out value))
+            if (mProperties.TryGetValue(name, out object value))
             {
                 return value == null ? defaultValue : (T)value;
             }

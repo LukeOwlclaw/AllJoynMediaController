@@ -40,82 +40,9 @@ namespace OpenAlljoynExplorer.Pages
             JObject json = new JObject();
             foreach (var inSignature in VM.Method.InSignature)
             {
-                json[inSignature.Name] = GetTypeDefinitionAsJson(inSignature.TypeDefinition);
+                json[inSignature.Name] = GetValueTypeAsJson(inSignature.TypeDefinition, null, true);
             }
             return json.ToString();
-        }
-
-        private JToken GetTypeDefinitionAsJson(ITypeDefinition typeDefinition)
-        {
-            switch (typeDefinition.Type)
-            {
-                case TypeId.Invalid:
-                    return JToken.FromObject("<invalid>");
-                case TypeId.Boolean:
-                    return JToken.FromObject(false);
-                case TypeId.Double:
-                    return JToken.FromObject(0.0d);
-                case TypeId.Dictionary:
-                    throw new NotImplementedException();
-                case TypeId.Signature:
-                    throw new NotImplementedException();
-                case TypeId.Int32:
-                    return JToken.FromObject((Int32)0);
-                case TypeId.Int16:
-                    return JToken.FromObject((Int16)0);
-                case TypeId.ObjectPath:
-                    throw new NotImplementedException();
-                case TypeId.Uint16:
-                    return JToken.FromObject((UInt16)0);
-                case TypeId.Struct:
-                    throw new NotImplementedException();
-                case TypeId.String:
-                    return JToken.FromObject(string.Empty);
-                case TypeId.Uint64:
-                    return JToken.FromObject((UInt64)0);
-                case TypeId.Uint32:
-                    return JToken.FromObject((UInt32)0);
-                case TypeId.Variant:
-                    throw new NotImplementedException();
-                case TypeId.Int64:
-                    return JToken.FromObject((Int64)0);
-                case TypeId.Uint8:
-                    return JToken.FromObject((byte)0);
-                case TypeId.ArrayByte:
-                    throw new NotImplementedException();
-                case TypeId.ArrayByteMask:
-                    throw new NotImplementedException();
-                case TypeId.BooleanArray:
-                    throw new NotImplementedException();
-                case TypeId.DoubleArray:
-                    throw new NotImplementedException();
-                case TypeId.Int32Array:
-                    throw new NotImplementedException();
-                case TypeId.Int16Array:
-                    throw new NotImplementedException();
-                case TypeId.Uint16Array:
-                    throw new NotImplementedException();
-                case TypeId.Uint64Array:
-                    throw new NotImplementedException();
-                case TypeId.Uint32Array:
-                    throw new NotImplementedException();
-                case TypeId.VariantArray:
-                    throw new NotImplementedException();
-                case TypeId.Int64Array:
-                    throw new NotImplementedException();
-                case TypeId.Uint8Array:
-                    throw new NotImplementedException();
-                case TypeId.SignatureArray:
-                    throw new NotImplementedException();
-                case TypeId.ObjectPathArray:
-                    throw new NotImplementedException();
-                case TypeId.StringArray:
-                    throw new NotImplementedException();
-                case TypeId.StructArray:
-                    throw new NotImplementedException();
-                default:
-                    throw new NotImplementedException();
-            }
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -157,58 +84,79 @@ namespace OpenAlljoynExplorer.Pages
             //propertyReader.Read(AllJoynTypeDefinition.CreateTypeDefintions("a{sv}") , "test");
         }
 
-        private JToken GetValueAsJson(ITypeDefinition typeDefinition, object value)
+        private JToken GetValueTypeAsJson(ITypeDefinition typeDefinition, object value, bool createTypeTemplate)
         {
+            if (createTypeTemplate && value != null)
+            {
+                throw new ArgumentException("When requesting to create template, value is ignored and must thus be null");
+            }
             switch (typeDefinition.Type)
             {
                 case TypeId.Invalid:
-                    break;
+                    return JToken.FromObject("<invalid>");
                 case TypeId.Boolean:
-                    break;
+                    return JToken.FromObject(value ?? default(bool));
                 case TypeId.Double:
-                    break;
+                    return JToken.FromObject(value ?? default(double));
                 case TypeId.Dictionary:
                     var dictionary = value as IList<KeyValuePair<object, object>>;
+                    if (createTypeTemplate)
+                    {
+                        // create dictionary with two entries to be used as template
+                        dictionary = new List<KeyValuePair<object, object>>
+                        {
+                            new KeyValuePair<object, object>(null, null),
+                            new KeyValuePair<object, object>(null, null)
+                        };
+                    }
+                    if (dictionary == null)
+                    {
+                        return JToken.FromObject("According to type definition value should be a dictionary but it is not!");
+                    }
                     var returnDictionary = new Dictionary<JToken, JToken>(dictionary.Count);
                     foreach (var item in dictionary)
                     {
-                        var itemKey = GetValueAsJson(typeDefinition.KeyType, item.Key);
-                        var itemValue = GetValueAsJson(typeDefinition.ValueType, item.Value);
+                        var itemKey = GetValueTypeAsJson(typeDefinition.KeyType, item.Key, createTypeTemplate);
+                        var itemValue = GetValueTypeAsJson(typeDefinition.ValueType, item.Value, createTypeTemplate);
                         returnDictionary.Add(itemKey, itemValue);
                     }
                     return JToken.FromObject(returnDictionary);
-                    break;
                 case TypeId.Signature:
                     break;
                 case TypeId.Int32:
-                    break;
+                    return JToken.FromObject(value ?? default(Int32));
                 case TypeId.Int16:
-                    break;
+                    return JToken.FromObject(value ?? default(Int16));
                 case TypeId.ObjectPath:
                     break;
                 case TypeId.Uint16:
-                    break;
+                    return JToken.FromObject(value ?? default(UInt16));
                 case TypeId.Struct:
                     break;
                 case TypeId.String:
-                    return JToken.FromObject(value ?? "\0");
-                    break;
+                    // for template return "string", otherwise default value is null string
+                    return JToken.FromObject(createTypeTemplate ? "string" : value ?? "\0");
                 case TypeId.Uint64:
-                    break;
+                    return JToken.FromObject(value ?? default(UInt64));
                 case TypeId.Uint32:
-                    break;
+                    return JToken.FromObject(value ?? default(UInt32));
                 case TypeId.Variant:
                     var variant = value as AllJoynMessageArgVariant;
-                    if (variant == null) {
-                        return JToken.FromObject("Got invalid variant");
+                    if (createTypeTemplate)
+                    {
+                        // Variant can contain anything. Use simple string for template
+                        var varianteTemplateType = AllJoynTypeDefinition.CreateTypeDefintions("s")[0];
+                        return GetValueTypeAsJson(varianteTemplateType, null, createTypeTemplate);
                     }
-                    return GetValueAsJson(variant.TypeDefinition, variant.Value);
-                    break;
+                    if (variant == null)
+                    {
+                        return JToken.FromObject("According to type definition value should be a variant but it is not!");
+                    }
+                    return GetValueTypeAsJson(variant.TypeDefinition, variant.Value, createTypeTemplate);
                 case TypeId.Int64:
-                    return JToken.FromObject(value ?? Int64.MinValue);
-                    break;
+                    return JToken.FromObject(value ?? default(Int64));
                 case TypeId.Uint8:
-                    break;
+                    return JToken.FromObject(value ?? (byte)0);
                 case TypeId.ArrayByte:
                     break;
                 case TypeId.ArrayByteMask:
@@ -242,41 +190,41 @@ namespace OpenAlljoynExplorer.Pages
                 case TypeId.StructArray:
                     //TestObjectType(value);
                     var fields = typeDefinition.Fields as IReadOnlyList<ITypeDefinition>;
-                    var values = value as IList<object>;
-                    var returnList = new List<JToken[]>(values.Count);
-                    foreach (AllJoynMessageArgStructure structEntry  in values)
+                    if (fields == null)
+                    {
+                        throw new ArgumentNullException("typeDefinition must contains type fields type definition for StructArray");
+                    }
+                    var structValues = value as IList<object>;
+                    if (createTypeTemplate)
+                    {
+                        var structTemplateItem = new AllJoynMessageArgStructure(typeDefinition);
+                        structValues = new List<object>() { structTemplateItem };
+                    }
+                    if (structValues == null)
+                    {
+                        return JToken.FromObject("According to type definition value should be a StructArray but it is not!");
+                    }
+                    var returnList = new List<JToken[]>(structValues.Count);
+                    foreach (AllJoynMessageArgStructure structEntry  in structValues)
                     {
                         if (structEntry.Count != fields.Count)
                         {
-                            return JToken.FromObject($"Got {values.Count} values in struct entry, expected {fields.Count} ");
+                            return JToken.FromObject($"Got {structValues.Count} values in struct entry, expected {fields.Count} ");
                         }
                         var entryArray = new JToken[fields.Count];
                         for (int i = 0; i < fields.Count; i++)
                         {
                             var structField = fields[i];
                             var structValue = structEntry[i];
-                            entryArray[i] = GetValueAsJson(structField, structValue);
+                            entryArray[i] = GetValueTypeAsJson(structField, structValue, createTypeTemplate);
                         }
                         returnList.Add(entryArray);
                     }
                     return JToken.FromObject(returnList);
-                    if (fields.Count != values.Count)
-                    {
-                        return JToken.FromObject($"Got {values.Count} values in struct, expected {fields.Count} ");
-                    }
-                    var returnArray2 = new JToken[fields.Count];
-
-                    for (int i = 0; i < fields.Count; i++)
-                    {
-                        var structField = fields[i];
-                        var structValue = values[i];
-                        returnArray2[i] = GetValueAsJson(structField, structValue);
-                    }
-                    return JToken.FromObject(returnArray2);
                 default:
                     throw new NotImplementedException();
             }
-            return null;
+            throw new NotImplementedException();
         }
             private async void InvokeButton_Click(object sender, RoutedEventArgs e)
         {
@@ -297,6 +245,7 @@ namespace OpenAlljoynExplorer.Pages
                     return;
                 }
 
+                var valueResultItems = new Dictionary<string, JToken>();
                 var values = result.Values as IList<object>;
                 StringBuilder sb = new StringBuilder();
                 sb.AppendLine();
@@ -304,11 +253,11 @@ namespace OpenAlljoynExplorer.Pages
                 {
                     ParameterInfo signature = VM.Method.OutSignature[i];
                     var value = result.Values[i];
-                    var valueAsJson = GetValueAsJson(signature.TypeDefinition, value);
-                    sb.AppendLine($"-->{signature.Name}: {valueAsJson}");
+                    var valueAsJson = GetValueTypeAsJson(signature.TypeDefinition, value, false);
+                    valueResultItems.Add(signature.Name, valueAsJson);
                 }
 
-                VM.MethodResult = sb.ToString();
+                VM.MethodResult = JToken.FromObject(valueResultItems).ToString();
                 return;
             }
         }

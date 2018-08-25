@@ -108,8 +108,7 @@ namespace MediaControl
                             var items = getRangeTask.Values[2] as IList<object>;
                             if (items == null)
                             {
-                                var errorString = items[0] as String;
-                                if (errorString != null)
+                                if (items[0] is String errorString)
                                 {
                                     throw new ArgumentException("Received playlist contains error: " + errorString);
                                 }
