@@ -84,6 +84,87 @@ namespace OpenAlljoynExplorer.Pages
             //propertyReader.Read(AllJoynTypeDefinition.CreateTypeDefintions("a{sv}") , "test");
         }
 
+        /// <summary>
+        /// Convert JSON object <paramref name="parameter"/> according to <paramref name="typeDefinition"/> to object which can be sent to
+        /// AllJoyn receiver.
+        /// </summary>
+        /// <param name="typeDefinition">Type definition for given parameter</param>
+        /// <param name="parameter">Parameter as JSON object</param>
+        /// <returns></returns>
+        private object GetValueAsObject(ITypeDefinition typeDefinition, JToken parameter)
+        {
+            switch (typeDefinition.Type)
+            {
+                case TypeId.Invalid:
+                    return "<invalid>";
+                case TypeId.Boolean:
+                    return parameter.ToObject<bool>();
+                case TypeId.Double:
+                    return parameter.ToObject<double>();
+                case TypeId.Dictionary:
+                    break;
+                case TypeId.Signature:
+                    break;
+                case TypeId.Int32:
+                    return parameter.ToObject<Int32>();
+                case TypeId.Int16:
+                    return parameter.ToObject<Int16>();
+                case TypeId.ObjectPath:
+                    break;
+                case TypeId.Uint16:
+                    return parameter.ToObject<UInt16>();
+                case TypeId.Struct:
+                    break;
+                case TypeId.String:
+                    return parameter.ToObject<string>();
+                case TypeId.Uint64:
+                    break;
+                case TypeId.Uint32:
+                    return parameter.ToObject<UInt32>();
+                case TypeId.Variant:
+                    break;
+                case TypeId.Int64:
+                    return parameter.ToObject<Int64>();
+                case TypeId.Uint8:
+                    return parameter.ToObject<char>();
+                case TypeId.ArrayByte:
+                    break;
+                case TypeId.ArrayByteMask:
+                    break;
+                case TypeId.BooleanArray:
+                    break;
+                case TypeId.DoubleArray:
+                    break;
+                case TypeId.Int32Array:
+                    break;
+                case TypeId.Int16Array:
+                    break;
+                case TypeId.Uint16Array:
+                    break;
+                case TypeId.Uint64Array:
+                    break;
+                case TypeId.Uint32Array:
+                    break;
+                case TypeId.VariantArray:
+                    break;
+                case TypeId.Int64Array:
+                    break;
+                case TypeId.Uint8Array:
+                    break;
+                case TypeId.SignatureArray:
+                    break;
+                case TypeId.ObjectPathArray:
+                    break;
+                case TypeId.StringArray:
+                    break;
+                case TypeId.StructArray:
+                    break;
+                default:
+                    break;
+            }
+            throw new NotImplementedException();
+        }
+
         private JToken GetValueTypeAsJson(ITypeDefinition typeDefinition, object value, bool createTypeTemplate)
         {
             if (createTypeTemplate && value != null)
@@ -262,10 +343,32 @@ namespace OpenAlljoynExplorer.Pages
             }
         }
 
+        /// <summary>
+        /// Returns method arguments entered by user as JSON string as list of objects which can be sent to AllJoyn receiver.
+        /// </summary>
+        /// <returns>List of object (method arguments)</returns>
         private List<object> GetInArgumentsAsObjectList()
         {
-            //VM.InvocationParametersAsJson
-            return new List<object> { };
+            var parameterList = new List<object> { };
+            try
+            {
+                JToken parameters = JObject.Parse(VM.InvocationParametersAsJson);
+
+                foreach (var inSignature in VM.Method.InSignature)
+                {
+                    JToken parameter = parameters.SelectToken(inSignature.Name);
+                    object parameterAsObject = GetValueAsObject(inSignature.TypeDefinition, parameter);
+                    parameterList.Add(parameterAsObject);
+                }
+            }
+            catch (Exception ex)
+            {
+                var dialog = new Windows.UI.Popups.MessageDialog(ex.ToString(), "Error while preparing parameters");
+                var asyncNoWait = dialog.ShowAsync();
+            }
+
+            return parameterList;
+
         }
 
         private void TestObjectType(object j)

@@ -31,14 +31,24 @@ namespace OpenAlljoynExplorer
         public App()
         {
             this.UnhandledException += App_UnhandledException;
+            App.Current.UnhandledException += App_UnhandledException;
             this.InitializeComponent();
             this.Suspending += OnSuspending;
         }
 
-        private void App_UnhandledException(object sender, Windows.UI.Xaml.UnhandledExceptionEventArgs e)
+        private async void App_UnhandledException(object sender, Windows.UI.Xaml.UnhandledExceptionEventArgs e)
         {
-            var dialog = new Windows.UI.Popups.MessageDialog(e.ToString(), "Sorry, something went very wrong");
-            var asyncNoWait = dialog.ShowAsync();
+            e.Handled = true;
+            var messageDialog = new Windows.UI.Popups.MessageDialog(e.Exception?.ToString() ?? e.Message, "Sorry, something went very wrong");
+            messageDialog.Commands.Add(new Windows.UI.Popups.UICommand(
+                "Close",
+                new Windows.UI.Popups.UICommandInvokedHandler(this.CommandInvokedHandler)));
+            await messageDialog.ShowAsync();
+        }
+
+        private void CommandInvokedHandler(Windows.UI.Popups.IUICommand command)
+        {
+            Application.Current.Exit();
         }
 
         /// <summary>
