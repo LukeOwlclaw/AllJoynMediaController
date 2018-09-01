@@ -162,7 +162,7 @@ namespace OpenAlljoynExplorer.Pages
                 default:
                     break;
             }
-            throw new NotImplementedException();
+            throw new NotImplementedException($"typeDefinition.Type={typeDefinition.Type}");
         }
 
         private JToken GetValueTypeAsJson(ITypeDefinition typeDefinition, object value, bool createTypeTemplate)
@@ -186,7 +186,6 @@ namespace OpenAlljoynExplorer.Pages
                         // create dictionary with two entries to be used as template
                         dictionary = new List<KeyValuePair<object, object>>
                         {
-                            new KeyValuePair<object, object>(null, null),
                             new KeyValuePair<object, object>(null, null)
                         };
                     }
@@ -279,6 +278,10 @@ namespace OpenAlljoynExplorer.Pages
                     if (createTypeTemplate)
                     {
                         var structTemplateItem = new AllJoynMessageArgStructure(typeDefinition);
+                        foreach (var field in fields)
+                        {
+                            structTemplateItem.Add(null);
+                        }
                         structValues = new List<object>() { structTemplateItem };
                     }
                     if (structValues == null)
@@ -286,7 +289,7 @@ namespace OpenAlljoynExplorer.Pages
                         return JToken.FromObject("According to type definition value should be a StructArray but it is not!");
                     }
                     var returnList = new List<JToken[]>(structValues.Count);
-                    foreach (AllJoynMessageArgStructure structEntry  in structValues)
+                    foreach (AllJoynMessageArgStructure structEntry in structValues)
                     {
                         if (structEntry.Count != fields.Count)
                         {
