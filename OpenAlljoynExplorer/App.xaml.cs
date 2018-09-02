@@ -7,8 +7,10 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using OpenAlljoynExplorer.Pages;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
+using Windows.ApplicationModel.Core;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -30,25 +32,35 @@ namespace OpenAlljoynExplorer
         /// </summary>
         public App()
         {
-            this.UnhandledException += App_UnhandledException;
-            App.Current.UnhandledException += App_UnhandledException;
+            UnhandledException += App_UnhandledException;
+            //App.Current.UnhandledException += App_UnhandledException;
+            //UnhandledException += App_UnhandledException;
+            //Application.Current.UnhandledException += App_UnhandledException;
             this.InitializeComponent();
             this.Suspending += OnSuspending;
         }
 
         private async void App_UnhandledException(object sender, Windows.UI.Xaml.UnhandledExceptionEventArgs e)
         {
-            e.Handled = true;
-            var messageDialog = new Windows.UI.Popups.MessageDialog(e.Exception?.ToString() ?? e.Message, "Sorry, something went very wrong");
-            messageDialog.Commands.Add(new Windows.UI.Popups.UICommand(
-                "Close",
-                new Windows.UI.Popups.UICommandInvokedHandler(this.CommandInvokedHandler)));
-            await messageDialog.ShowAsync();
+            try
+            {
+                e.Handled = true;
+                if (global::System.Diagnostics.Debugger.IsAttached) global::System.Diagnostics.Debugger.Break();
+                var messageDialog = new Windows.UI.Popups.MessageDialog(e.Exception?.ToString() ?? e.Message, "Sorry, something went very wrong");
+                messageDialog.Commands.Add(new Windows.UI.Popups.UICommand(
+                    "Close",
+                    new Windows.UI.Popups.UICommandInvokedHandler(this.CommandInvokedHandler)));
+                await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                    async () =>
+                    {
+                        await messageDialog.ShowAsync();
+                    });
+            } catch { }
         }
 
         private void CommandInvokedHandler(Windows.UI.Popups.IUICommand command)
         {
-            Application.Current.Exit();
+            //Application.Current.Exit();
         }
 
         /// <summary>

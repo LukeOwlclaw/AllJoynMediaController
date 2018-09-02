@@ -6,6 +6,7 @@ using Newtonsoft.Json.Linq;
 using OpenAlljoynExplorer.Controllers;
 using OpenAlljoynExplorer.Models;
 using OpenAlljoynExplorer.Support;
+using OpenAlljoynExplorer.TypeDefinitions;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Navigation;
 
@@ -31,8 +32,15 @@ namespace OpenAlljoynExplorer.Pages
 
         private void MethodPage_Loaded(object sender, RoutedEventArgs e)
         {
-            ReadAll();
-            VM.InvocationParametersAsJson = GetInSignatureAsJson();
+            try
+            {
+                ReadAll();
+                VM.InvocationParametersAsJson = GetInSignatureAsJson();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex);
+            }
         }
 
         private string GetInSignatureAsJson()
@@ -40,6 +48,7 @@ namespace OpenAlljoynExplorer.Pages
             JObject json = new JObject();
             foreach (var inSignature in VM.Method.InSignature)
             {
+                json[inSignature.Name + "_TypeDef"] = TypeDefinitionToString(inSignature.TypeDefinition);
                 json[inSignature.Name] = GetValueTypeAsJson(inSignature.TypeDefinition, null, true);
             }
             return json.ToString();
@@ -212,7 +221,19 @@ namespace OpenAlljoynExplorer.Pages
                 case TypeId.Uint16:
                     return JToken.FromObject(value ?? default(UInt16));
                 case TypeId.Struct:
-                    break;
+                    var structValues = value as IList<object>;
+                    if (typeDefinition.Fields.Count != structValues.Count)
+                    {
+                        return JToken.FromObject($"Expected struct with {typeDefinition.Fields.Count} elements but got {structValues.Count}");
+                    }
+                    var returnStructList = new List<JToken>(structValues.Count);
+                    for (int i = 0; i < structValues.Count; i++)
+                    {
+                        var structValueDefinition = typeDefinition.Fields[i];
+                        var structValue = structValues[i];
+                        returnStructList.Add(GetValueTypeAsJson(structValueDefinition, structValue, createTypeTemplate));
+                    }
+                    return JToken.FromObject(returnStructList);
                 case TypeId.String:
                     // for template return "string", otherwise default value is null string
                     return JToken.FromObject(createTypeTemplate ? "string" : value ?? "\0");
@@ -266,7 +287,13 @@ namespace OpenAlljoynExplorer.Pages
                 case TypeId.ObjectPathArray:
                     break;
                 case TypeId.StringArray:
-                    break;
+                    var strings = value as IList<object>;
+                    var returnStringList = new List<JToken>(strings.Count);
+                    foreach (var s in strings)
+                    {
+                        returnStringList.Add(GetValueTypeAsJson(StringTypeDefinition.Instance, s, createTypeTemplate));
+                    }
+                    return JToken.FromObject(returnStringList);
                 case TypeId.StructArray:
                     //TestObjectType(value);
                     var fields = typeDefinition.Fields as IReadOnlyList<ITypeDefinition>;
@@ -274,7 +301,7 @@ namespace OpenAlljoynExplorer.Pages
                     {
                         throw new ArgumentNullException("typeDefinition must contains type fields type definition for StructArray");
                     }
-                    var structValues = value as IList<object>;
+                    var structArrayValues = value as IList<object>;
                     if (createTypeTemplate)
                     {
                         var structTemplateItem = new AllJoynMessageArgStructure(typeDefinition);
@@ -282,18 +309,18 @@ namespace OpenAlljoynExplorer.Pages
                         {
                             structTemplateItem.Add(null);
                         }
-                        structValues = new List<object>() { structTemplateItem };
+                        structArrayValues = new List<object>() { structTemplateItem };
                     }
-                    if (structValues == null)
+                    if (structArrayValues == null)
                     {
                         return JToken.FromObject("According to type definition value should be a StructArray but it is not!");
                     }
-                    var returnList = new List<JToken[]>(structValues.Count);
-                    foreach (AllJoynMessageArgStructure structEntry in structValues)
+                    var returnList = new List<JToken[]>(structArrayValues.Count);
+                    foreach (AllJoynMessageArgStructure structEntry in structArrayValues)
                     {
                         if (structEntry.Count != fields.Count)
                         {
-                            return JToken.FromObject($"Got {structValues.Count} values in struct entry, expected {fields.Count} ");
+                            return JToken.FromObject($"Got {structArrayValues.Count} values in struct entry, expected {fields.Count} ");
                         }
                         var entryArray = new JToken[fields.Count];
                         for (int i = 0; i < fields.Count; i++)
@@ -308,9 +335,9 @@ namespace OpenAlljoynExplorer.Pages
                 default:
                     throw new NotImplementedException();
             }
-            throw new NotImplementedException();
+            throw new NotImplementedException($"typeDefinition.Type={typeDefinition.Type}");
         }
-            private async void InvokeButton_Click(object sender, RoutedEventArgs e)
+        private async void InvokeButton_Click(object sender, RoutedEventArgs e)
         {
             List<object> inArgs = GetInArgumentsAsObjectList();
             var result = await VM.Method.InvokeAsync(inArgs);
@@ -338,12 +365,28 @@ namespace OpenAlljoynExplorer.Pages
                     ParameterInfo signature = VM.Method.OutSignature[i];
                     var value = result.Values[i];
                     var valueAsJson = GetValueTypeAsJson(signature.TypeDefinition, value, false);
+                    valueResultItems.Add(signature.Name + "_TypeDef", TypeDefinitionToString(signature.TypeDefinition));
                     valueResultItems.Add(signature.Name, valueAsJson);
                 }
 
                 VM.MethodResult = JToken.FromObject(valueResultItems).ToString();
                 return;
             }
+        }
+
+        private JToken TypeDefinitionToString(ITypeDefinition typeDefinition)
+        {
+            var dictInfo = string.Empty;
+            if (typeDefinition.KeyType != null && typeDefinition.ValueType != null)
+            {
+                dictInfo = $"({typeDefinition.KeyType}->{typeDefinition.ValueType})";
+            }
+            var fieldsInfo = string.Empty;
+            if (typeDefinition.Fields != null)
+            {
+                fieldsInfo = $"(Fields:{typeDefinition.Fields.Count})";
+            }
+            return typeDefinition.Type.ToString() + dictInfo + fieldsInfo;
         }
 
         /// <summary>
@@ -500,7 +543,7 @@ namespace OpenAlljoynExplorer.Pages
                             }
                         }
 
-                        
+
                     }
 
                     //j.ToString();

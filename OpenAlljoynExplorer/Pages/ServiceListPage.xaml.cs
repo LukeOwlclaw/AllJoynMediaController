@@ -16,7 +16,6 @@ namespace OpenAlljoynExplorer.Pages
     {
         public AllJoynModel VM { get; set; }
         public AllJoynController Controller { get; set; }
-        public bool DisableFavoriteNavigation { get; set; } = true;
 
         public ServiceListPage()
         {
@@ -41,14 +40,12 @@ namespace OpenAlljoynExplorer.Pages
             //Controller.GoTo(frame: this.Frame, deviceId: "Aploris", objectPath: "/net/allplay/MediaPlayer",
             //    interfaceName: "net.allplay.MediaPlayer", methodName: "GetPlaylist");
 
-            Controller.Start(!DisableFavoriteNavigation);
+            Controller.Start();
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            if (e.NavigationMode == NavigationMode.Back)
-                DisableFavoriteNavigation = true;
         }
 
         private void ListView_ItemClick(object sender, ItemClickEventArgs e)
