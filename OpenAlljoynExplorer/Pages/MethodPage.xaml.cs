@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using DeviceProviders;
@@ -119,7 +120,7 @@ namespace OpenAlljoynExplorer.Pages
                 case TypeId.Int16:
                     return parameter.ToObject<Int16>();
                 case TypeId.ObjectPath:
-                    break;
+                    return parameter.ToObject<string>();
                 case TypeId.Uint16:
                     return parameter.ToObject<UInt16>();
                 case TypeId.Struct:
@@ -131,7 +132,7 @@ namespace OpenAlljoynExplorer.Pages
                 case TypeId.Uint32:
                     return parameter.ToObject<UInt32>();
                 case TypeId.Variant:
-                    break;
+                    return GetJsonValueAsObject(parameter);
                 case TypeId.Int64:
                     return parameter.ToObject<Int64>();
                 case TypeId.Uint8:
@@ -174,6 +175,97 @@ namespace OpenAlljoynExplorer.Pages
             throw new NotImplementedException($"typeDefinition.Type={typeDefinition.Type}");
         }
 
+        private object GetJsonValueAsObject(JToken parameter)
+        {
+            switch (parameter.Type)
+            {
+                case JTokenType.None:
+                    break;
+                case JTokenType.Object:
+                    if (parameter.Count() == 2)
+                    {
+                        var variantHeader = GetJsonValueAsObject(parameter.Children().First()) as KeyValuePair<object, object>?;
+                        var variantValue = GetJsonValueAsObject(parameter.Children().Last()) as KeyValuePair<object, object>?;
+                        if (variantHeader.HasValue && variantHeader.Value.Key.Equals("variant") &&
+                            variantValue.HasValue && variantValue.Value.Key.Equals("value")) {
+                            var variantType = variantHeader.Value.Value;
+                            var variantContent = variantValue.Value.Value as JToken;
+                            switch (variantType.ToString().ToLowerInvariant())
+                            {
+                                case "uint8":
+                                    return variantContent.ToObject<char>();
+                                case "uint16":
+                                    return variantContent.ToObject<UInt16>();
+                                case "uint32":
+                                    return variantContent.ToObject<UInt32>();
+                                case "uint64":
+                                    return variantContent.ToObject<UInt64>();
+                                case "int16":
+                                    return variantContent.ToObject<Int16>();
+                                case "int32":
+                                    return variantContent.ToObject<Int32>();
+                                case "int64":
+                                    return variantContent.ToObject<Int64>();
+                                case "string":
+                                    return variantContent.ToObject<string>();
+                            }
+                        }
+                    }
+                    var objectItems = new List<object>();
+                    foreach (var item in parameter)
+                    {
+                        objectItems.Add(GetJsonValueAsObject(item));
+                    }
+                    return objectItems;
+                case JTokenType.Array:
+                    var arrayItems = new List<object>();
+                    foreach (var item in parameter)
+                    {
+                        arrayItems.Add(GetJsonValueAsObject(item));
+                    }
+                    return arrayItems;
+                case JTokenType.Constructor:
+                    break;
+                case JTokenType.Property:
+                    JProperty property = parameter.Value<JProperty>();//JProperty.FromObject(parameter);
+                    return new KeyValuePair<object, object>(property.Name, property.Value);
+                case JTokenType.Comment:
+                    break;
+                case JTokenType.Integer:
+                    // Note: There is no unambiguous mapping from JSON Integer to AllJoyn type (Int16, Int32, etc).
+                    // We'd need some meta data to choose the correct type. Some JSON-encoded descriptive tag would be nice.
+                    // For now we just use arbitrarily Int64.
+                    return GetValueAsObject(AlljoynTypeDefinition.Uint16, parameter);
+                case JTokenType.Float:
+                    return GetValueAsObject(AlljoynTypeDefinition.Double, parameter);
+                case JTokenType.String:
+                    return GetValueAsObject(AlljoynTypeDefinition.String, parameter);
+                case JTokenType.Boolean:
+                    break;
+                case JTokenType.Null:
+                    // Consider Null actually Null-string.
+                    // This again is somewhat arbitrary.
+                    return "\0";
+                case JTokenType.Undefined:
+                    break;
+                case JTokenType.Date:
+                    break;
+                case JTokenType.Raw:
+                    break;
+                case JTokenType.Bytes:
+                    break;
+                case JTokenType.Guid:
+                    break;
+                case JTokenType.Uri:
+                    break;
+                case JTokenType.TimeSpan:
+                    break;
+                default:
+                    break;
+            }
+            throw new NotSupportedException($"variant->parameter.Type={parameter.Type}");
+        }
+
         private JToken GetValueTypeAsJson(ITypeDefinition typeDefinition, object value, bool createTypeTemplate)
         {
             if (createTypeTemplate && value != null)
@@ -200,7 +292,8 @@ namespace OpenAlljoynExplorer.Pages
                     }
                     if (dictionary == null)
                     {
-                        return JToken.FromObject("According to type definition value should be a dictionary but it is not!");
+                        string guess = GuessObjectType(value);
+                        return JToken.FromObject("According to type definition value should be a dictionary but got: " + guess);
                     }
                     var returnDictionary = new Dictionary<JToken, JToken>(dictionary.Count);
                     foreach (var item in dictionary)
@@ -217,7 +310,7 @@ namespace OpenAlljoynExplorer.Pages
                 case TypeId.Int16:
                     return JToken.FromObject(value ?? default(Int16));
                 case TypeId.ObjectPath:
-                    break;
+                    return JToken.FromObject(createTypeTemplate ? "/Object/Path" : value ?? "\0");
                 case TypeId.Uint16:
                     return JToken.FromObject(value ?? default(UInt16));
                 case TypeId.Struct:
@@ -245,9 +338,8 @@ namespace OpenAlljoynExplorer.Pages
                     var variant = value as AllJoynMessageArgVariant;
                     if (createTypeTemplate)
                     {
-                        // Variant can contain anything. Use simple string for template
-                        var varianteTemplateType = AllJoynTypeDefinition.CreateTypeDefintions("s")[0];
-                        return GetValueTypeAsJson(varianteTemplateType, null, createTypeTemplate);
+                        // Variant can contain anything. Use simple string "variant" for template
+                        return GetValueTypeAsJson(AlljoynTypeDefinition.String, "variant", false);
                     }
                     if (variant == null)
                     {
@@ -263,37 +355,28 @@ namespace OpenAlljoynExplorer.Pages
                 case TypeId.ArrayByteMask:
                     break;
                 case TypeId.BooleanArray:
-                    break;
                 case TypeId.DoubleArray:
-                    break;
                 case TypeId.Int32Array:
-                    break;
                 case TypeId.Int16Array:
-                    break;
                 case TypeId.Uint16Array:
-                    break;
                 case TypeId.Uint64Array:
-                    break;
                 case TypeId.Uint32Array:
-                    break;
-                case TypeId.VariantArray:
-                    break;
                 case TypeId.Int64Array:
-                    break;
                 case TypeId.Uint8Array:
+                case TypeId.StringArray:
+                case TypeId.ObjectPathArray:
+                    var arrayItems = value as IList<object>;
+                    var returnArrayList = new List<JToken>(arrayItems.Count);
+                    foreach (var s in arrayItems)
+                    {
+                        returnArrayList.Add(GetValueTypeAsJson(AlljoynTypeDefinition.TypeInstanceByArrayType(typeDefinition.Type), s, 
+                            createTypeTemplate));
+                    }
+                    return JToken.FromObject(returnArrayList);
+                case TypeId.VariantArray:
                     break;
                 case TypeId.SignatureArray:
                     break;
-                case TypeId.ObjectPathArray:
-                    break;
-                case TypeId.StringArray:
-                    var strings = value as IList<object>;
-                    var returnStringList = new List<JToken>(strings.Count);
-                    foreach (var s in strings)
-                    {
-                        returnStringList.Add(GetValueTypeAsJson(StringTypeDefinition.Instance, s, createTypeTemplate));
-                    }
-                    return JToken.FromObject(returnStringList);
                 case TypeId.StructArray:
                     //TestObjectType(value);
                     var fields = typeDefinition.Fields as IReadOnlyList<ITypeDefinition>;
@@ -337,6 +420,21 @@ namespace OpenAlljoynExplorer.Pages
             }
             throw new NotImplementedException($"typeDefinition.Type={typeDefinition.Type}");
         }
+
+        /// <summary>
+        /// Try to find out type (and if possible content) of given value (which usually is a n Alljoyn ComObject.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private string GuessObjectType(object value)
+        {
+            if (value == null)
+                return "null";
+            if (value is IList<object> list)
+                return "list of " + GuessObjectType(list.FirstOrDefault());
+            return value.GetType() + ": " + value.ToString();
+        }
+
         private async void InvokeButton_Click(object sender, RoutedEventArgs e)
         {
             List<object> inArgs = GetInArgumentsAsObjectList();
@@ -352,7 +450,16 @@ namespace OpenAlljoynExplorer.Pages
             {
                 if (result.Values.Count != VM.Method.OutSignature.Count)
                 {
-                    VM.MethodResult = $"Got {result.Values.Count} return values, expected {VM.Method.OutSignature.Count}";
+                    var guessingStringBuilder = new StringBuilder();
+                    guessingStringBuilder.Append($"BAD RESPONSE.");
+                    guessingStringBuilder.Append($" Got {result.Values.Count} return values, expected {VM.Method.OutSignature.Count}.");
+                    guessingStringBuilder.AppendLine(" Try guessing return values:");
+                    int i = 1;
+                    foreach (var returnValue in result.Values)
+                    {
+                        guessingStringBuilder.AppendLine(i++ + " " + GuessObjectType(returnValue));
+                    }
+                    VM.MethodResult = guessingStringBuilder.ToString();
                     return;
                 }
 
@@ -376,15 +483,16 @@ namespace OpenAlljoynExplorer.Pages
 
         private JToken TypeDefinitionToString(ITypeDefinition typeDefinition)
         {
-            var dictInfo = string.Empty;
+            string dictInfo = null;
             if (typeDefinition.KeyType != null && typeDefinition.ValueType != null)
             {
-                dictInfo = $"({typeDefinition.KeyType}->{typeDefinition.ValueType})";
+                dictInfo = $"({TypeDefinitionToString(typeDefinition.KeyType)}->{TypeDefinitionToString(typeDefinition.ValueType)})";
             }
-            var fieldsInfo = string.Empty;
+            string fieldsInfo = null;
             if (typeDefinition.Fields != null)
             {
-                fieldsInfo = $"(Fields:{typeDefinition.Fields.Count})";
+                fieldsInfo = $"(Fields:[{typeDefinition.Fields.Count}]" 
+                    + string.Join(",", typeDefinition.Fields.Select(f => TypeDefinitionToString(f))) + ")";
             }
             return typeDefinition.Type.ToString() + dictInfo + fieldsInfo;
         }
