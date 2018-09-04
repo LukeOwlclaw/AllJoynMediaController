@@ -36,7 +36,7 @@ namespace OpenAlljoynExplorer.Pages
         {
             try
             {
-                ReadAll();
+                //ReadAll();
                 VM.InvocationParametersAsJson = GetInSignatureAsJson();
             }
             catch (Exception ex)

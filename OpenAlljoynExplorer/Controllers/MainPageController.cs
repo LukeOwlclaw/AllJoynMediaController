@@ -42,7 +42,7 @@ namespace OpenAlljoynExplorer.Controllers
                 await Favorite.SetAvailableFavorite(VM.Favorites, service);
 
                 await service.ReadIconAsync();
-                service.ReadAll();
+                //service.ReadAll();
             }
             catch (Exception ex)
             {

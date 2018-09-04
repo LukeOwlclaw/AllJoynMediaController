@@ -64,8 +64,8 @@
                     <TextBlock IsTextSelectionEnabled="True" Text="{x:Bind VM.MethodResult, Mode=OneWay}"/>
                 </StackPanel>
             </ScrollViewer>
-            <variableItemListView:VariableItemListView Grid.Row="6" VM="{x:Bind VM.VariableListViewModel}" BorderBrush="LightGray" 
-                                                       BorderThickness="3" Margin="10" />
+            <!--<variableItemListView:VariableItemListView Grid.Row="6" VM="{x:Bind VM.VariableListViewModel}" BorderBrush="LightGray" 
+                                                       BorderThickness="3" Margin="10" />-->
 
         </Grid>
     </ScrollViewer>

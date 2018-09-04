@@ -86,7 +86,7 @@
                                 <TextBlock Grid.Row="0" Text="{x:Bind Service.AboutData.DeviceName}" />
                                 <TextBlock Grid.Row="1" Text="{x:Bind Service.AboutData.AppName}" />
                                 <TextBlock Grid.Row="2" Text="{x:Bind Service.AboutData.Manufacturer}" />
-                                <variableItemListView:VariableItemListView Grid.Row="4" VM="{x:Bind VariableListViewModel}" BorderBrush="LightGray" BorderThickness="3" Margin="10" />
+                                <!--<variableItemListView:VariableItemListView Grid.Row="4" VM="{x:Bind VariableListViewModel}" BorderBrush="LightGray" BorderThickness="3" Margin="10" />-->
                             </Grid>
                         </Grid>
                     </Border>
