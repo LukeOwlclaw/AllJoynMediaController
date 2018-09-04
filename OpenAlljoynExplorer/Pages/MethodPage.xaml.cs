@@ -1,6 +1,7 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using DeviceProviders;
 using Newtonsoft.Json.Linq;
@@ -101,7 +102,7 @@ namespace OpenAlljoynExplorer.Pages
         /// <param name="typeDefinition">Type definition for given parameter</param>
         /// <param name="parameter">Parameter as JSON object</param>
         /// <returns></returns>
-        private object GetValueAsObject(ITypeDefinition typeDefinition, JToken parameter)
+        private object GetValueAsObject(ITypeDefinition typeDefinition, JToken parameter, string parameterName)
         {
             switch (typeDefinition.Type)
             {
@@ -112,7 +113,34 @@ namespace OpenAlljoynExplorer.Pages
                 case TypeId.Double:
                     return parameter.ToObject<double>();
                 case TypeId.Dictionary:
-                    break;
+                    var dictionary = new List<KeyValuePair<object, object>>();
+                    var keyType = typeDefinition.KeyType;
+                    var valueType = typeDefinition.ValueType;
+                    //JProperty dictionaryItemTupleJson = dictionaryItemTuple.Value<JProperty>();
+                    foreach (var dictionaryItemTuple in parameter)
+                    {
+                        if (dictionaryItemTuple is JProperty dictionaryItemProperty)
+                        {
+                            var keyValue = dictionaryItemProperty.Name;
+                            var valueValue = dictionaryItemProperty.Value;
+                            var keyObject = GetValueAsObject(keyType, keyValue, parameterName);
+                            var valueObject = GetValueAsObject(valueType, valueValue, parameterName);
+                            dictionary.Add(new KeyValuePair<object, object>(keyObject, valueObject));
+                        }
+
+                        //var dictionaryItemTupleObject = GetJsonValueAsObject(dictionaryItemTupleJson, parameterName);
+                        //if (dictionaryItemTupleObject is KeyValuePair<object, object> keyValuePair)
+                        //{
+                        //    dictionary.Add(keyValuePair);
+                        //}
+                        else
+                        {
+                            throw new Exception($"Parameter '{parameterName}' of type {typeDefinition.Type} requires" +
+                                $" to contain JPropertys. Got: {dictionaryItemTuple?.GetType()}");
+                        }
+                        //dictionary.Add(dictionaryItemTupleObject as KeyValuePair<object, object>);
+                    }
+                    return dictionary;
                 case TypeId.Signature:
                     break;
                 case TypeId.Int32:
@@ -128,11 +156,11 @@ namespace OpenAlljoynExplorer.Pages
                 case TypeId.String:
                     return parameter.ToObject<string>();
                 case TypeId.Uint64:
-                    break;
+                    return parameter.ToObject<UInt64>();
                 case TypeId.Uint32:
                     return parameter.ToObject<UInt32>();
                 case TypeId.Variant:
-                    return GetJsonValueAsObject(parameter);
+                    return GetJsonValueAsObject(parameter, parameterName);
                 case TypeId.Int64:
                     return parameter.ToObject<Int64>();
                 case TypeId.Uint8:
@@ -168,78 +196,104 @@ namespace OpenAlljoynExplorer.Pages
                 case TypeId.StringArray:
                     break;
                 case TypeId.StructArray:
-                    break;
+                    foreach (var structItemSet in parameter)
+                    {
+
+                    }
+                    if (typeDefinition.Fields.Count != parameter.First.Count())
+                    {
+                        throw new Exception($"Parameter '{parameterName}' of type {typeDefinition.Type} requires" +
+                            $" {typeDefinition.Fields.Count()} fields. Got {parameter.First.Count()}");
+                    }
+                    var structArrayValues = new List<object>(typeDefinition.Fields.Count);
+                    for (int i = 0; i < typeDefinition.Fields.Count; i++)
+                    {
+                        var fieldDefinition = typeDefinition.Fields[i];
+                        var fieldValue = parameter.First[i];
+                        structArrayValues.Add(GetValueAsObject(fieldDefinition, fieldValue, parameterName));
+                    }
+                    return structArrayValues;
                 default:
                     break;
             }
             throw new NotImplementedException($"typeDefinition.Type={typeDefinition.Type}");
         }
 
-        private object GetJsonValueAsObject(JToken parameter)
+        private object GetJsonValueAsObject(JToken parameter, string parameterName)
         {
             switch (parameter.Type)
             {
                 case JTokenType.None:
                     break;
                 case JTokenType.Object:
-                    if (parameter.Count() == 2)
+                    // if object contains two JProperty named "variant" and "value", parse object as variant type.
+                    if (parameter.Count() == 2 &&
+                        parameter.Children().First() is JProperty variantHeader && parameter.Children().Last() is JProperty variantValue
+                        && variantHeader.Name.Equals("variant") && variantValue.Name.Equals("value"))
                     {
-                        var variantHeader = GetJsonValueAsObject(parameter.Children().First()) as KeyValuePair<object, object>?;
-                        var variantValue = GetJsonValueAsObject(parameter.Children().Last()) as KeyValuePair<object, object>?;
-                        if (variantHeader.HasValue && variantHeader.Value.Key.Equals("variant") &&
-                            variantValue.HasValue && variantValue.Value.Key.Equals("value")) {
-                            var variantType = variantHeader.Value.Value;
-                            var variantContent = variantValue.Value.Value as JToken;
-                            switch (variantType.ToString().ToLowerInvariant())
-                            {
-                                case "uint8":
-                                    return variantContent.ToObject<char>();
-                                case "uint16":
-                                    return variantContent.ToObject<UInt16>();
-                                case "uint32":
-                                    return variantContent.ToObject<UInt32>();
-                                case "uint64":
-                                    return variantContent.ToObject<UInt64>();
-                                case "int16":
-                                    return variantContent.ToObject<Int16>();
-                                case "int32":
-                                    return variantContent.ToObject<Int32>();
-                                case "int64":
-                                    return variantContent.ToObject<Int64>();
-                                case "string":
-                                    return variantContent.ToObject<string>();
-                            }
+                        ////var variantHeader = parameter.Children().First();
+                        ////var variantValue = parameter.Children().Last() as JProperty;
+                        //var variantHeaderJson = GetJsonValueAsObject(variantHeader  , parameterName) as KeyValuePair<object, object>?;
+                        //var variantValueJson = GetJsonValueAsObject(variantValue, parameterName) as KeyValuePair<object, object>?;
+                        //if (variantHeaderJson.HasValue && variantHeaderJson.Value.Key.Equals("variant") &&
+                        //    variantValueJson.HasValue && variantValueJson.Value.Key.Equals("value")) {
+                        var variantType = variantHeader.Value;
+                        var variantContent = variantValue.Value;
+                        //return variantContent;
+                        switch (variantType.ToString().ToLowerInvariant())
+                        {
+                            case "dictionary":
+                                return new List<object>();
+                            case "uint8":
+                                return GetValueAsObject(AlljoynTypeDefinition.Uint8, variantContent, parameterName);
+                            case "uint16":
+                                return GetValueAsObject(AlljoynTypeDefinition.Uint16, variantContent, parameterName);
+                            case "uint32":
+                                return GetValueAsObject(AlljoynTypeDefinition.Uint32, variantContent, parameterName);
+                            case "uint64":
+                                return GetValueAsObject(AlljoynTypeDefinition.Uint64, variantContent, parameterName);
+                            case "int16":
+                                return GetValueAsObject(AlljoynTypeDefinition.Int16, variantContent, parameterName);
+                            case "int32":
+                                return GetValueAsObject(AlljoynTypeDefinition.Int32, variantContent, parameterName);
+                            case "int64":
+                                return GetValueAsObject(AlljoynTypeDefinition.Int64, variantContent, parameterName);
+                            case "string":
+                                return GetValueAsObject(AlljoynTypeDefinition.String, variantContent, parameterName);
                         }
+                        //}
                     }
-                    var objectItems = new List<object>();
-                    foreach (var item in parameter)
-                    {
-                        objectItems.Add(GetJsonValueAsObject(item));
-                    }
-                    return objectItems;
+                    //var objectItems = new List<object>();
+                    //foreach (var item in parameter)
+                    //{
+                    //    objectItems.Add(GetJsonValueAsObject(item, parameterName));
+                    //}
+                    //return objectItems;
+                    break;
                 case JTokenType.Array:
                     var arrayItems = new List<object>();
                     foreach (var item in parameter)
                     {
-                        arrayItems.Add(GetJsonValueAsObject(item));
+                        arrayItems.Add(GetJsonValueAsObject(item, parameterName));
                     }
                     return arrayItems;
                 case JTokenType.Constructor:
                     break;
                 case JTokenType.Property:
-                    JProperty property = parameter.Value<JProperty>();//JProperty.FromObject(parameter);
-                    return new KeyValuePair<object, object>(property.Name, property.Value);
+                    JProperty property = parameter.Value<JProperty>();
+                    var propertyObject = GetJsonValueAsObject(property.Value, parameterName);
+                    return new KeyValuePair<object, object>(property.Name, propertyObject);
                 case JTokenType.Comment:
                     break;
                 case JTokenType.Integer:
                     // Note: There is no unambiguous mapping from JSON Integer to AllJoyn type (Int16, Int32, etc).
                     // We'd need some meta data to choose the correct type. Some JSON-encoded descriptive tag would be nice.
                     // For now we just use arbitrarily Int64.
-                    return GetValueAsObject(AlljoynTypeDefinition.Uint16, parameter);
+                    return GetValueAsObject(AlljoynTypeDefinition.Uint16, parameter, parameterName);
                 case JTokenType.Float:
-                    return GetValueAsObject(AlljoynTypeDefinition.Double, parameter);
+                    return GetValueAsObject(AlljoynTypeDefinition.Double, parameter, parameterName);
                 case JTokenType.String:
-                    return GetValueAsObject(AlljoynTypeDefinition.String, parameter);
+                    return GetValueAsObject(AlljoynTypeDefinition.String, parameter, parameterName);
                 case JTokenType.Boolean:
                     break;
                 case JTokenType.Null:
@@ -338,8 +392,14 @@ namespace OpenAlljoynExplorer.Pages
                     var variant = value as AllJoynMessageArgVariant;
                     if (createTypeTemplate)
                     {
+
+
+                        JProperty variantDefinition = new JProperty("variant", "uint32");
+                        JProperty variantValue = new JProperty("value", 1);
+                        JObject jObject = new JObject(variantDefinition, variantValue);
+                        return jObject;
                         // Variant can contain anything. Use simple string "variant" for template
-                        return GetValueTypeAsJson(AlljoynTypeDefinition.String, "variant", false);
+                        //return GetValueTypeAsJson(AlljoynTypeDefinition.String, "variant", false);
                     }
                     if (variant == null)
                     {
@@ -369,7 +429,7 @@ namespace OpenAlljoynExplorer.Pages
                     var returnArrayList = new List<JToken>(arrayItems.Count);
                     foreach (var s in arrayItems)
                     {
-                        returnArrayList.Add(GetValueTypeAsJson(AlljoynTypeDefinition.TypeInstanceByArrayType(typeDefinition.Type), s, 
+                        returnArrayList.Add(GetValueTypeAsJson(AlljoynTypeDefinition.TypeInstanceByArrayType(typeDefinition.Type), s,
                             createTypeTemplate));
                     }
                     return JToken.FromObject(returnArrayList);
@@ -429,55 +489,80 @@ namespace OpenAlljoynExplorer.Pages
         private string GuessObjectType(object value)
         {
             if (value == null)
+            {
                 return "null";
+            }
+
             if (value is IList<object> list)
+            {
                 return "list of " + GuessObjectType(list.FirstOrDefault());
+            }
+
             return value.GetType() + ": " + value.ToString();
         }
 
         private async void InvokeButton_Click(object sender, RoutedEventArgs e)
         {
-            List<object> inArgs = GetInArgumentsAsObjectList();
-            var result = await VM.Method.InvokeAsync(inArgs);
-            var status = result.Status as AllJoynStatus;
-            VM.MethodStatus = status;
-            if (result?.Status == null)
+            try
             {
-                return;
-            }
-
-            if (result.Status.IsSuccess)
-            {
-                if (result.Values.Count != VM.Method.OutSignature.Count)
+                List<object> inArgs = GetInArgumentsAsObjectList();
+                var result = await VM.Method.InvokeAsync(inArgs);
+                var status = result.Status as AllJoynStatus;
+                VM.MethodStatus = status;
+                if (result?.Status == null)
                 {
-                    var guessingStringBuilder = new StringBuilder();
-                    guessingStringBuilder.Append($"BAD RESPONSE.");
-                    guessingStringBuilder.Append($" Got {result.Values.Count} return values, expected {VM.Method.OutSignature.Count}.");
-                    guessingStringBuilder.AppendLine(" Try guessing return values:");
-                    int i = 1;
-                    foreach (var returnValue in result.Values)
-                    {
-                        guessingStringBuilder.AppendLine(i++ + " " + GuessObjectType(returnValue));
-                    }
-                    VM.MethodResult = guessingStringBuilder.ToString();
                     return;
                 }
 
-                var valueResultItems = new Dictionary<string, JToken>();
-                var values = result.Values as IList<object>;
-                StringBuilder sb = new StringBuilder();
-                sb.AppendLine();
-                for (int i = 0; i < VM.Method.OutSignature.Count; i++)
+                if (result.Status.IsSuccess)
                 {
-                    ParameterInfo signature = VM.Method.OutSignature[i];
-                    var value = result.Values[i];
-                    var valueAsJson = GetValueTypeAsJson(signature.TypeDefinition, value, false);
-                    valueResultItems.Add(signature.Name + "_TypeDef", TypeDefinitionToString(signature.TypeDefinition));
-                    valueResultItems.Add(signature.Name, valueAsJson);
-                }
+                    if (result.Values.Count != VM.Method.OutSignature.Count)
+                    {
+                        var guessingStringBuilder = new StringBuilder();
+                        guessingStringBuilder.Append($"BAD RESPONSE.");
+                        guessingStringBuilder.Append($" Got {result.Values.Count} return values, expected {VM.Method.OutSignature.Count}.");
+                        guessingStringBuilder.AppendLine(" Try guessing return values:");
+                        int i = 1;
+                        foreach (var returnValue in result.Values)
+                        {
+                            guessingStringBuilder.AppendLine(i++ + " " + GuessObjectType(returnValue));
+                        }
+                        VM.MethodResult = guessingStringBuilder.ToString();
+                        return;
+                    }
 
-                VM.MethodResult = JToken.FromObject(valueResultItems).ToString();
-                return;
+                    var valueResultItems = new Dictionary<string, JToken>();
+                    var values = result.Values as IList<object>;
+                    StringBuilder sb = new StringBuilder();
+                    sb.AppendLine();
+                    for (int i = 0; i < VM.Method.OutSignature.Count; i++)
+                    {
+                        ParameterInfo signature = VM.Method.OutSignature[i];
+                        var value = result.Values[i];
+                        var valueAsJson = GetValueTypeAsJson(signature.TypeDefinition, value, false);
+                        valueResultItems.Add(signature.Name + "_TypeDef", TypeDefinitionToString(signature.TypeDefinition));
+                        valueResultItems.Add(signature.Name, valueAsJson);
+                    }
+
+                    VM.MethodResult = JToken.FromObject(valueResultItems).ToString();
+                    return;
+                }
+            }
+            catch (COMException ex)
+            {
+                var dialog = new Windows.UI.Popups.MessageDialog("This usually means that receiver expected a different data type for" +
+                    " some parameter which can easily happen for Variant types which can contain any data type. Please try another." +
+                    "\r\n\r\n" + ex,
+                    $"Receiver failed to handle request");
+                var asyncNoWait = dialog.ShowAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                if (System.Diagnostics.Debugger.IsAttached)
+                {
+                    System.Diagnostics.Debugger.Break();
+                }
             }
         }
 
@@ -491,7 +576,7 @@ namespace OpenAlljoynExplorer.Pages
             string fieldsInfo = null;
             if (typeDefinition.Fields != null)
             {
-                fieldsInfo = $"(Fields:[{typeDefinition.Fields.Count}]" 
+                fieldsInfo = $"(Fields:[{typeDefinition.Fields.Count}]"
                     + string.Join(",", typeDefinition.Fields.Select(f => TypeDefinitionToString(f))) + ")";
             }
             return typeDefinition.Type.ToString() + dictInfo + fieldsInfo;
@@ -511,7 +596,7 @@ namespace OpenAlljoynExplorer.Pages
                 foreach (var inSignature in VM.Method.InSignature)
                 {
                     JToken parameter = parameters.SelectToken(inSignature.Name);
-                    object parameterAsObject = GetValueAsObject(inSignature.TypeDefinition, parameter);
+                    object parameterAsObject = GetValueAsObject(inSignature.TypeDefinition, parameter, inSignature.Name);
                     parameterList.Add(parameterAsObject);
                 }
             }
