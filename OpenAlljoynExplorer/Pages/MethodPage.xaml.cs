@@ -22,6 +22,7 @@ namespace OpenAlljoynExplorer.Pages
     /// </summary>
     public sealed partial class MethodPage : BackBasePage
     {
+        static object MyVariant;
         public MethodModel VM { get; set; }
 
         public ServicePageController Controller { get; set; }
@@ -113,6 +114,7 @@ namespace OpenAlljoynExplorer.Pages
                 case TypeId.Double:
                     return parameter.ToObject<double>();
                 case TypeId.Dictionary:
+                    var d2 = new Dictionary<object, object>();
                     var dictionary = new List<KeyValuePair<object, object>>();
                     var keyType = typeDefinition.KeyType;
                     var valueType = typeDefinition.ValueType;
@@ -125,6 +127,7 @@ namespace OpenAlljoynExplorer.Pages
                             var valueValue = dictionaryItemProperty.Value;
                             var keyObject = GetValueAsObject(keyType, keyValue, parameterName);
                             var valueObject = GetValueAsObject(valueType, valueValue, parameterName);
+                            d2.Add(keyObject, valueObject);
                             dictionary.Add(new KeyValuePair<object, object>(keyObject, valueObject));
                         }
 
@@ -140,6 +143,7 @@ namespace OpenAlljoynExplorer.Pages
                         }
                         //dictionary.Add(dictionaryItemTupleObject as KeyValuePair<object, object>);
                     }
+                    return d2.ToList();
                     return dictionary;
                 case TypeId.Signature:
                     break;
@@ -160,7 +164,17 @@ namespace OpenAlljoynExplorer.Pages
                 case TypeId.Uint32:
                     return parameter.ToObject<UInt32>();
                 case TypeId.Variant:
-                    return GetJsonValueAsObject(parameter, parameterName);
+                    //var variantObject = GetJsonValueAsObject(parameter, parameterName);
+                    //variantObject = "s";
+
+                    //return MyVariant;
+
+                    //var variant = new System2.Variant2(false);
+                    //variant = System2.Variant2.DBNull;
+                    //return (Object)(0 != 0);
+                    //return variant;
+                    var asObject = GetJsonValueAsObject(parameter, parameterName);
+                    return asObject;
                 case TypeId.Int64:
                     return parameter.ToObject<Int64>();
                 case TypeId.Uint8:
@@ -196,23 +210,34 @@ namespace OpenAlljoynExplorer.Pages
                 case TypeId.StringArray:
                     break;
                 case TypeId.StructArray:
+                    var list = new List<object>(parameter.Count());
+                    int itemCount = 0;
                     foreach (var structItemSet in parameter)
                     {
+                        if (typeDefinition.Fields.Count != structItemSet.Count())
+                        {
+                            throw new Exception($"Parameter '{parameterName}' of type {typeDefinition.Type} requires" +
+                                $" {typeDefinition.Fields.Count()} fields. Got {structItemSet.Count()} fields for item" +
+                                $" at index {itemCount} (0-based)");
+                        }
 
+                        var argument = new AllJoynMessageArgStructure(typeDefinition);
+
+                        var structArrayValues = new List<object>(typeDefinition.Fields.Count);
+                        for (int i = 0; i < typeDefinition.Fields.Count; i++)
+                        {
+                            var fieldDefinition = typeDefinition.Fields[i];
+                            var fieldValue = structItemSet[i];
+                            var parameterObject = GetValueAsObject(fieldDefinition, fieldValue, parameterName);
+                            argument.Add(parameterObject);
+                            structArrayValues.Add(parameterObject);
+                        }
+                        list.Add(argument);
+                        //return argument;
+                        //return structArrayValues;
+                        itemCount++;
                     }
-                    if (typeDefinition.Fields.Count != parameter.First.Count())
-                    {
-                        throw new Exception($"Parameter '{parameterName}' of type {typeDefinition.Type} requires" +
-                            $" {typeDefinition.Fields.Count()} fields. Got {parameter.First.Count()}");
-                    }
-                    var structArrayValues = new List<object>(typeDefinition.Fields.Count);
-                    for (int i = 0; i < typeDefinition.Fields.Count; i++)
-                    {
-                        var fieldDefinition = typeDefinition.Fields[i];
-                        var fieldValue = parameter.First[i];
-                        structArrayValues.Add(GetValueAsObject(fieldDefinition, fieldValue, parameterName));
-                    }
-                    return structArrayValues;
+                    return list;
                 default:
                     break;
             }
@@ -390,6 +415,7 @@ namespace OpenAlljoynExplorer.Pages
                     return JToken.FromObject(value ?? default(UInt32));
                 case TypeId.Variant:
                     var variant = value as AllJoynMessageArgVariant;
+                    if (value != null) { MyVariant = value; }
                     if (createTypeTemplate)
                     {
 
@@ -678,9 +704,236 @@ namespace OpenAlljoynExplorer.Pages
             System.Diagnostics.Debugger.Break();
         }
 
+        public class Media
+        {
+            public Media() { }
+            /// <summary>
+            /// Initializes a new instance of the <see cref="Media"/> class.
+            /// </summary>
+            /// <param name="url">The URL.</param>
+            /// <param name="title">The title.</param>
+            /// <param name="artist">The artist.</param>
+            /// <param name="thumbnailUrl">The thumbnail URL.</param>
+            /// <param name="duration">The duration.</param>
+            /// <param name="mediaType">Type of the media.</param>
+            /// <param name="album">The album.</param>
+            /// <param name="genre">The genre.</param>
+            public Media(string url, string title = null, string artist = null,
+                Uri thumbnailUrl = null, TimeSpan? duration = null,
+                string mediaType = null, string album = null, string genre = null)
+            {
+                Url = url;
+                Title = title;
+                Artist = artist;
+                ThumbnailUrl = thumbnailUrl;
+                Duration = duration == null ? TimeSpan.Zero : duration.Value;
+                MediaType = mediaType;
+                Album = album;
+                Genre = genre;
+            }
+
+            internal Media(AllJoynMessageArgStructure s)
+            {
+                // "(ssssxsssa{ss}a{sv}v)
+                Url = s[0] as string;
+                Title = s[1] as string;
+                Artist = s[2] as string;
+                ThumbnailUrl = s[3] is string ? new Uri(s[3] as string) : null;
+                Duration = TimeSpan.FromMilliseconds((long)s[4]);
+                MediaType = s[5] as string;
+                Album = s[6] as string;
+                Genre = s[7] as string;
+                var otherDataArg = s[8] as IList<KeyValuePair<object, object>>;
+                OtherData = new Dictionary<string, string>();
+                foreach (var item in otherDataArg)
+                {
+                    OtherData.Add((string)item.Key, (string)item.Value);
+                }
+
+                var mediumArg = s[9] as IList<KeyValuePair<object, object>>;
+                MediumDesc = new Dictionary<string, object>();
+                foreach (var item in mediumArg)
+                {
+                    MediumDesc.Add((string)item.Key, item.Value);
+                }
+
+                UserData = s[10] as AllJoynMessageArgVariant;
+            }
+
+            internal IList<object> ToParameter()
+            {
+                var t = AllJoynTypeDefinition.CreateTypeDefintions("(ssssxsssa{ss}a{sv}v)").First();
+
+                // ITypeDefinition.h -->
+                // public enum class TypeId
+                //    {
+                //        Invalid = 0,
+                //    Boolean = 'b',                               // maps to ALLJOYN_BOOLEAN
+                //    Double = 'd',                                // maps to ALLJOYN_DOUBLE
+                //    Dictionary = 'e',                            // maps to an array of ALLJOYN_DICT_ENTRY: a{**}
+                //    Signature = 'g',                             // maps to ALLJOYN_SIGNATURE (string)
+                //    Int32 = 'i',                                 // maps to ALLJOYN_INT32
+                //    Int16 = 'n',                                 // maps to ALLJOYN_INT16
+                //    ObjectPath = 'o',                            // maps to ALLJOYN_OBJECT_PATH (string)
+                //    Uint16 = 'q',                                // maps to ALLLJOYN_UINT16
+                //    Struct = 'r',                                // maps to ALLJOYN_STRUCT
+                //    String = 's',                                // maps to ALLJOYN_STRING
+                //    Uint64 = 't',                                // maps to ALLJOYN_UINT64
+                //    Uint32 = 'u',                                // maps to ALLJOYN_UINT32
+                //    Variant = 'v',                               // maps to ALLJOYN_VARIANT
+                //    Int64 = 'x',                                 // maps to ALLJOYN_INT64
+                //    Uint8 = 'y',                                 // maps to ALLJOYN_BYTE
+                //    ArrayByte = 'a',
+                //    ArrayByteMask = 0xFF,
+                //    BooleanArray    = ('b' << 8) | ArrayByte,    // maps to ALLJOYN_BOOLEAN_ARRAY
+                //    DoubleArray     = ('d' << 8) | ArrayByte,    // maps to ALLJOYN_DOUBLE_ARRAY
+                //    Int32Array      = ('i' << 8) | ArrayByte,    // maps to ALLJOYN_INT32_ARRAY
+                //    Int16Array      = ('n' << 8) | ArrayByte,    // maps to ALLJOYN_INT16_ARRAY
+                //    Uint16Array     = ('q' << 8) | ArrayByte,    // maps to ALLJOYN_UINT16_ARRAY
+                //    Uint64Array     = ('t' << 8) | ArrayByte,    // maps to ALLJOYN_UINT64_ARRAY
+                //    Uint32Array     = ('u' << 8) | ArrayByte,    // maps to ALLJOYN_UINT32_ARRAY
+                //    VariantArray    = ('v' << 8) | ArrayByte,    // no AllJoyn typeid equivalent defined
+                //    Int64Array      = ('x' << 8) | ArrayByte,    // maps to ALLJOYN_INT64_ARRAY
+                //    Uint8Array      = ('y' << 8) | ArrayByte,    // maps to ALLJOYN_BYTE_ARRAY
+                //    SignatureArray  = ('g' << 8) | ArrayByte,    // no AllJoyn typeid equivalent defined
+                //    ObjectPathArray = ('o' << 8) | ArrayByte,    // no AllJoyn typeid equivalent defined
+                //    StringArray     = ('s' << 8) | ArrayByte,    // no AllJoyn typeid equivalent defined
+                //    StructArray     = ('r' << 8) | ArrayByte,    // no AllJoyn typeid equivalent defined
+                // };
+                var argument = new AllJoynMessageArgStructure(t);
+
+                // var count = paramDef.Fields.Count;
+                // string[] types = paramDef.Fields.Select(f => f.Type.ToString()).ToArray();
+                // List<object> argument = new List<object>();
+                argument.Add(Url);
+                argument.Add(Title ?? " ");
+                argument.Add(Artist ?? " ");
+                argument.Add(ThumbnailUrl?.OriginalString ?? " ");
+                argument.Add((long)Duration.TotalMilliseconds);
+                argument.Add(MediaType ?? " ");
+                argument.Add(Album ?? " ");
+                argument.Add(Genre ?? " ");
+
+                // Other data: a{ss}
+                var otherData = new Dictionary<object, object>();
+                if (OtherData != null)
+                {
+                    foreach (var item in OtherData)
+                    {
+                        otherData.Add(item.Key, item.Value);
+                    }
+                }
+
+                argument.Add(otherData.ToList());
+
+                // medium desc: a{sv}
+                var mediumDesc = new Dictionary<object, object>();
+                if (MediumDesc != null)
+                {
+                    foreach (var item in MediumDesc)
+                    {
+                        mediumDesc.Add(item.Key, item.Value);
+                    }
+                }
+
+                argument.Add(mediumDesc.ToList());
+
+                // AllJoynMessageArgVariant v = new AllJoynMessageArgVariant();
+                // var arg = new DeviceProviders.AllJoynMessageArgVariant(AllJoynTypeDefinition.CreateTypeDefintions("v").First(), 0);
+                // arg.Value = "upnp";
+                argument.Add(UserData ?? "upnp"); // Variant: userdata
+                return argument;
+            }
+
+            /// <summary>
+            /// Gets the url to the item
+            /// </summary>
+            public string Url { get; }
+
+            /// <summary>
+            /// Gets the title
+            /// </summary>
+            public string Title { get; }
+
+            /// <summary>
+            /// Gets the artist
+            /// </summary>
+            public string Artist { get; }
+
+            /// <summary>
+            /// Gets the media thumbnail url
+            /// </summary>
+            public Uri ThumbnailUrl { get; }
+
+            /// <summary>
+            /// Gets the duration
+            /// </summary>
+            public TimeSpan Duration { get; }
+
+            /// <summary>
+            /// Gets the type of media
+            /// </summary>
+            public string MediaType { get; }
+
+            /// <summary>
+            /// Gets the album
+            /// </summary>
+            public string Album { get; }
+
+            /// <summary>
+            /// Gets the genre
+            /// </summary>
+            public string Genre { get; }
+
+            /// <summary>
+            /// Gets or sets additional data.
+            /// </summary>
+            /// <value>The additional data.</value>
+            public IDictionary<string, string> OtherData { get; set; }
+
+            /// <summary>
+            /// Gets or sets additional media descriptors.
+            /// </summary>
+            /// <value>The medium desc.</value>
+            public IDictionary<string, object> MediumDesc { get; set; }
+
+            public object UserData { get; set; }
+
+        }
+
         private async void TestButton_Click(object sender, RoutedEventArgs e)
         {
-            var result = await VM.Method.InvokeAsync(new List<object> { /*"en"*/ });
+            var list = new List<Media>();
+            var song = new Media(
+                url: "http://192.168.81.100:8200/MediaItems/4670.mp3",
+                title: "song1",
+                artist: "artist",
+                thumbnailUrl: new Uri("http://192.168.81.100:8200/MediaItems/7845.jpg"),
+                duration: TimeSpan.FromSeconds(123),
+                album: "album",
+                genre: "Pop",
+                mediaType: "upnp"
+            );
+            var song2 = new Media(
+                url: "http://192.168.81.100:8200/MediaItems/4670.mp3",
+                title: "song2",
+                artist: "artist",
+                thumbnailUrl: new Uri("http://192.168.81.100:8200/MediaItems/7845.jpg"),
+                duration: TimeSpan.FromSeconds(123),
+                album: "album",
+                genre: "Pop",
+                mediaType: "upnp"
+            );
+            song.OtherData = new Dictionary<string, string>() { { "a", "b" } };
+            song.MediumDesc = new Dictionary<string, object>() { { "a", 4 } };
+            song.UserData = "\0";
+            list.Add(song);
+            list.Add(song);
+            list.Add(song);
+            var objectToSend = new List<object>(list.Select(i => i.ToParameter()));
+
+            //var result = await VM.Method.InvokeAsync(new List<object> { /*"en"*/ });
+            var result = await VM.Method.InvokeAsync(new List<object> { objectToSend, 1, "MyController", "upnp" });
             //var result = await VM.Method.InvokeAsync(new List<object> {  });
             var status = result.Status as AllJoynStatus;
 
