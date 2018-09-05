@@ -451,6 +451,7 @@ namespace OpenAlljoynExplorer.Pages
                 case TypeId.Uint8Array:
                 case TypeId.StringArray:
                 case TypeId.ObjectPathArray:
+                    if (value == null) { return JToken.FromObject(new List<JToken>()); }
                     var arrayItems = value as IList<object>;
                     var returnArrayList = new List<JToken>(arrayItems.Count);
                     foreach (var s in arrayItems)

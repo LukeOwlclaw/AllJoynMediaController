@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using DeviceProviders;
 using OpenAlljoynExplorer.Models;
 using OpenAlljoynExplorer.Support;
@@ -9,7 +10,7 @@ namespace OpenAlljoynExplorer.Controllers
     /// <summary>
     /// Detects all available AllJoyn Services.
     /// </summary>
-    public class AllJoynController
+    public class AllJoynController : IDisposable
     {
         private AllJoynModel VM;
         private readonly Frame mNavigationFrame;
@@ -20,9 +21,11 @@ namespace OpenAlljoynExplorer.Controllers
             mNavigationFrame = frame;
         }
 
+        private DeviceProviders.AllJoynProvider p;
+
         internal void Start()
         {
-            DeviceProviders.AllJoynProvider p = new DeviceProviders.AllJoynProvider();
+            p = new DeviceProviders.AllJoynProvider();
             p.ServiceJoined += ServiceJoined;
             p.ServiceDropped += ServiceDropped;
             p.Start();
@@ -30,6 +33,10 @@ namespace OpenAlljoynExplorer.Controllers
 
         private void ServiceDropped(IProvider sender, ServiceDroppedEventArgs args)
         {
+            if (args != null)
+            {
+                Marshal.ReleaseComObject(args.Service);
+            }
         }
 
 
@@ -61,6 +68,18 @@ namespace OpenAlljoynExplorer.Controllers
                     System.Diagnostics.Debug.WriteLine(ex);
                 }
             });
+        }
+
+        public void Dispose()
+        {
+            if (p != null)
+            {
+                foreach (var service in p.Services)
+                {
+
+                    Marshal.ReleaseComObject(service);
+                }
+            }
         }
     }
 }

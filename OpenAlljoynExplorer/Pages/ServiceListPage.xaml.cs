@@ -24,6 +24,12 @@ namespace OpenAlljoynExplorer.Pages
             VM.Favorites.AddRange(Favorite.GetAll());
             this.InitializeComponent();
             Loaded += ServiceListPage_Loaded;
+            this.Unloaded += ServiceListPage_Unloaded;
+        }
+
+        private void ServiceListPage_Unloaded(object sender, RoutedEventArgs e)
+        {
+            Controller.Dispose();
         }
 
         private void ServiceListPage_Loaded(object sender, RoutedEventArgs e)
