@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:OpenAlljoynExplorer.Pages"
     xmlns:models="using:OpenAlljoynExplorer.Models"
+    xmlns:DeviceProviders="using:DeviceProviders"
     xmlns:converters="using:Shared.Converters"
     xmlns:controls="using:Shared.Controls"
     xmlns:variableItemListView="using:VariableItemListView"
@@ -15,6 +16,7 @@
     <Page.Resources>
         <converters:VisibleWhenZeroConverter x:Key="VisibleWhenZeroConverter"  />
         <converters:VisibleWhenNotNullConverter x:Key="VisibleWhenNotNullConverter"  />
+        <converters:VisibleWhenNullConverter x:Key="VisibleWhenNullConverter"  />
         <converters:VisibleWhenTrueConverter x:Key="VisibleWhenTrueConverter"  />
     </Page.Resources>
 
@@ -62,7 +64,7 @@
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="models:AllJoynService" >
 
-                    <Border BorderThickness="0" BorderBrush="Black" CornerRadius="10" MinWidth="200">
+                    <Border BorderThickness="1" BorderBrush="Black" CornerRadius="10" MinWidth="200" Margin="10">
                         <Grid HorizontalAlignment="Left" MinWidth="200" MinHeight="200" MaxHeight="600" ScrollViewer.VerticalScrollBarVisibility="Visible">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="*"></RowDefinition>
@@ -75,18 +77,59 @@
                             <Border Grid.Column="1" Visibility="{x:Bind Icon, Converter={StaticResource VisibleWhenNotNullConverter}, Mode=OneWay}" BorderBrush="LightGray" BorderThickness="1" Padding="5" CornerRadius="10" Margin="10,10,0,10" Opacity="20">
                                 <Image Source="{x:Bind Icon, Mode=OneWay}" VerticalAlignment="Center"/>
                             </Border>
-                            <Border Grid.Column="1" Margin="0,0,10,0"></Border>
-                            <Grid Grid.Column="1" >
+                            <Grid Grid.Column="1" Padding="10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                    <ColumnDefinition Width="3"></ColumnDefinition>
+                                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                </Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"></RowDefinition>
+                                    <RowDefinition Height="Auto"></RowDefinition>
+                                    <RowDefinition Height="Auto"></RowDefinition>
+                                    <RowDefinition Height="Auto"></RowDefinition>
+                                    <RowDefinition Height="Auto"></RowDefinition>
+                                    <RowDefinition Height="Auto"></RowDefinition>
                                     <RowDefinition Height="Auto"></RowDefinition>
                                     <RowDefinition Height="Auto"></RowDefinition>
                                     <RowDefinition Height="Auto"></RowDefinition>
                                     <RowDefinition Height="*"></RowDefinition>
                                 </Grid.RowDefinitions>
-                                <TextBlock Grid.Row="0" Text="{x:Bind Service.AboutData.DeviceName}" />
-                                <TextBlock Grid.Row="1" Text="{x:Bind Service.AboutData.AppName}" />
-                                <TextBlock Grid.Row="2" Text="{x:Bind Service.AboutData.Manufacturer}" />
-                                <!--<variableItemListView:VariableItemListView Grid.Row="4" VM="{x:Bind VariableListViewModel}" BorderBrush="LightGray" BorderThickness="3" Margin="10" />-->
+                                <TextBlock Grid.Column="0" Grid.Row="0" Text="DeviceName" />
+                                <TextBlock Grid.Column="2" Grid.Row="0" Text="{x:Bind Service.AboutData.DeviceName}" />
+                                <TextBlock Grid.Column="0" Grid.Row="1" Text="AppName" />
+                                <TextBlock Grid.Column="2" Grid.Row="1" Text="{x:Bind Service.AboutData.AppName}" />
+                                <TextBlock Grid.Column="0" Grid.Row="2" Text="Manufacturer" />
+                                <TextBlock Grid.Column="2" Grid.Row="2" Text="{x:Bind Service.AboutData.Manufacturer}" />
+                                <TextBlock Grid.Column="0" Grid.Row="4" Text="AppId" />
+                                <TextBlock Grid.Column="2" Grid.Row="4" Text="{x:Bind Service.AboutData.AppId}" />
+                                <TextBlock Grid.Column="0" Grid.Row="5" Text="CurrentLanguage" />
+                                <TextBlock Grid.Column="2" Grid.Row="5" Text="{x:Bind Service.AboutData.CurrentLanguage}" />
+                                <TextBlock Grid.Column="0" Grid.Row="6" Text="ModelNumber" />
+                                <TextBlock Grid.Column="2" Grid.Row="6" Text="{x:Bind Service.AboutData.ModelNumber}" />
+
+                                <ListView Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="8" ItemsSource="{x:Bind Service.Objects}" >
+                                    <ListView.ItemContainerStyle>
+                                        <Style TargetType="ListViewItem">
+                                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                            <Setter Property="MinHeight" Value="0" />
+                                            <Setter Property="Padding" Value="0 0 0 0" />
+                                        </Style>
+                                    </ListView.ItemContainerStyle>
+                                    <ListView.ItemTemplate >
+                                        <DataTemplate x:DataType="DeviceProviders:IBusObject"  >
+                                            <TextBlock Foreground="Red"
+                                                Visibility="{x:Bind Interfaces, Converter={StaticResource VisibleWhenNullConverter}, Mode=OneWay}">
+                                                <Run Text="Interface "></Run>
+                                                <Run Text="{x:Bind Path}"></Run>
+                                                <Run Text=" is null!"></Run>
+                                                <Run Text="(can happen when too many AllJoyn devices)" Foreground="Black"></Run>
+                                            </TextBlock>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+
+                                <!--<variableItemListView:VariableItemListView Grid.Row="8" Grid.ColumnSpan="3" VM="{x:Bind VariableListViewModel}" BorderBrush="LightGray" BorderThickness="3" Margin="10" />-->
                             </Grid>
                         </Grid>
                     </Border>

@@ -16,6 +16,7 @@
     <local:BackBasePage.Resources>
         <converters:VisibleWhenZeroConverter x:Key="VisibleWhenZeroConverter"  />
         <converters:VisibleWhenNotNullConverter x:Key="VisibleWhenNotNullConverter"  />
+        <converters:VisibleWhenNullConverter x:Key="VisibleWhenNullConverter"  />
     </local:BackBasePage.Resources>
     
     <Grid>
@@ -35,6 +36,7 @@
                         <Border BorderThickness="0" BorderBrush="Black" CornerRadius="10" MinWidth="200">
                             <Grid HorizontalAlignment="Left" MinWidth="200" MinHeight="20" MaxHeight="600" ScrollViewer.VerticalScrollBarVisibility="Visible">
                                 <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"></RowDefinition>
                                     <RowDefinition Height="*"></RowDefinition>
                                 </Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
@@ -43,6 +45,9 @@
                                     <ColumnDefinition Width="*"></ColumnDefinition>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Grid.Column="0" Grid.Row="0" Text="{x:Bind Path}" />
+                                <TextBlock Grid.Column="0" Grid.Row="1" Text="FAILURE! Interfaces is null!" Foreground="Red" 
+                                           Visibility="{x:Bind Interfaces, Mode=OneWay, Converter={StaticResource VisibleWhenNullConverter}, FallbackValue=Collapsed}">
+                                </TextBlock>
                             </Grid>
                         </Border>
 

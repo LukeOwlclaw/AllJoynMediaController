@@ -107,6 +107,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Controls\WrapPanel.cs" />
+    <Compile Include="Converters\VisibleWhenNullConverter.cs" />
     <Compile Include="Converters\VisibleWhenTrueConverter.cs" />
     <Compile Include="Converters\VisibleWhenZeroConverter.cs" />
     <Compile Include="Converters\VisibleWhenNotNullConverter.cs" />
