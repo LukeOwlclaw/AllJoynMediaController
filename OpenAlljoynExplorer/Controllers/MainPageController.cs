@@ -63,20 +63,20 @@ namespace OpenAlljoynExplorer.Controllers
             /// Most important, the warning below about "AllJoyn device simulator" does not apply when using 
             /// own objects. (The disposing of the ComObjects is not mandatory!)
             /// 
-            var asyncOkay10 = Dispatcher.Dispatch(() =>
-            {
-                try
-                {
-                    var service = new AllJoynService(new MyService(args.Service));
-                    VM.AllJoynServices.Add(service);
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine(ex);
-                }
-            });
-            ReleaseServiceComObject(args.Service);
-            return;
+            //var asyncOkay10 = Dispatcher.Dispatch(() =>
+            //{
+            //    try
+            //    {
+            //        var service = new AllJoynService(new MyService(args.Service));
+            //        VM.AllJoynServices.Add(service);
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        System.Diagnostics.Debug.WriteLine(ex);
+            //    }
+            //});
+            //ReleaseServiceComObject(args.Service);
+            //return;
 
             // Warning! If there are too many devices or a bad device, OpenAlljoynExplorer will freeze on refreshing.
             // MainThread hangs in external code. Probably DeviceProvider is misbehaving. Not sure though.
