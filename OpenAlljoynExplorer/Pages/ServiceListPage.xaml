@@ -43,6 +43,7 @@
                         <TextBlock Text="{x:Bind InterfaceName}" />
                         <TextBlock Text="{x:Bind DeviceId}" />
                         <TextBlock Text="Is available!" Foreground="Green" Visibility="{x:Bind IsAvailable, Mode=OneWay, Converter={StaticResource VisibleWhenTrueConverter}, FallbackValue=Collapsed}"></TextBlock>
+                        <TextBlock Text="Not available but owner is!" Foreground="Orange" Visibility="{x:Bind IsAvailableOwnerOnly, Mode=OneWay, Converter={StaticResource VisibleWhenTrueConverter}, FallbackValue=Collapsed}"></TextBlock>
                     </StackPanel>
                 </DataTemplate>
             </ListView.ItemTemplate>

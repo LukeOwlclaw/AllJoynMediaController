@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using DeviceProviders;
 using Newtonsoft.Json;
 using OpenAlljoynExplorer.Support;
 using Shared.Support;
 using Windows.Storage;
-using Windows.UI.Popups;
 
 namespace OpenAlljoynExplorer.Models
 {
@@ -24,11 +22,16 @@ namespace OpenAlljoynExplorer.Models
             get { return Get<bool>(); }
             set { Set(value); }
         }
+        public bool IsAvailableOwnerOnly
+        {
+            get { return Get<bool>(); }
+            set { Set(value); }
+        }
 
         public IService Service { get; private set; }
         public IInterface Interface { get; private set; }
         public IMethod Method { get; private set; }
-
+        
         public bool Equals(Favorite other)
         {
             return GetHashCode() == other.GetHashCode();
@@ -86,14 +89,22 @@ namespace OpenAlljoynExplorer.Models
             return favorites;
         }
 
-        internal static async Task SetAvailableFavorite(IEnumerable<Favorite> favorites , AllJoynService availableService)
+        internal static async Task SetAvailableFavorite(IEnumerable<Favorite> favorites, AllJoynService availableService)
         {
             foreach (var favorite in favorites)
             {
                 if (availableService.Service.AboutData.DeviceId == favorite.DeviceId)
                 {
                     var navigationObject = availableService?.Service?.Objects?.FirstOrDefault(o => o != null & o.Path == favorite.ObjectPath);
-                    if (navigationObject?.Interfaces != null)
+                    if (navigationObject != null && navigationObject.Interfaces == null)
+                    {
+                        // favorite method is not available not owning IBusObject is.
+                        await Dispatcher.Dispatch(() =>
+                        {
+                            favorite.IsAvailableOwnerOnly = true;
+                        });
+                    }
+                    else if (navigationObject?.Interfaces != null)
                     {
                         var navigationInterface = navigationObject.Interfaces.FirstOrDefault(i => i.Name == favorite.InterfaceName);
                         if (navigationInterface != null)
