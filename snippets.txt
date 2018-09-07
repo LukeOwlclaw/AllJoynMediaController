@@ -1,0 +1,117 @@
+Working input arguments for AllJoyn methods (mainly for media player)
+
+GetRange
+{
+  "snapshotId_TypeDef": "String",
+  "snapshotId": "\u0000",
+  "start_TypeDef": "Int32",
+  "start": 0,
+  "count_TypeDef": "Int32",
+  "count": 10
+}
+
+Add
+{
+  "snapshotId_TypeDef": "String",
+  "snapshotId": "c2a2de793db9c19d66dc1863cafb3c7f6cbe714572531e354309fe0220b7e729",
+  "position_TypeDef": "Int32",
+  "position": 0,
+  "items_TypeDef": "StructArray(Fields:[11]String,String,String,String,Int64,String,String,String,Dictionary(String->String),Dictionary(String->Variant),Variant)",
+  "items": [
+     [
+      "http://192.168.81.100:8200/MediaItems/4670.mp3",
+      "song1",
+      "artist1",
+      "http://192.168.81.100:8200/MediaItems/7845.jpg",
+      123,
+      "audio",
+      "pop",
+      "upnp",
+      {},
+      {},
+      {
+        "variant": "string",
+        "value":" "
+      }
+    ]
+  ]
+}
+
+UpdatePlaylist
+{
+  "items_TypeDef": "StructArray(Fields:[11]String,String,String,String,Int64,String,String,String,Dictionary(String->String),Dictionary(String->Variant),Variant)",
+  "items": [
+    [
+      "http://192.168.81.100:8200/MediaItems/2075.mp3",
+      "Amy Macdonald - Slow It Down",
+      "\u0000",
+      "\u0000",
+      0,
+      "audio",
+      "\u0000",
+      "\u0000",
+      {},
+      {},
+      " "
+    ]
+  ],
+  "controllerType_TypeDef": "String",
+  "controllerType": "MyController",
+  "playlistUserData_TypeDef": "String",
+  "playlistUserData": "\u0000"
+}
+
+UpdatePlaylist
+{
+  "playlistItems_TypeDef": "StructArray(Fields:[11]String,String,String,String,Int64,String,String,String,Dictionary(String->String),Dictionary(String->Variant),Variant)",
+  "playlistItems": [
+    [
+      "http://192.168.81.100:8200/MediaItems/4670.mp3",
+      "song1",
+      "artist1",
+      "http://192.168.81.100:8200/MediaItems/7845.jpg",
+      123,
+      "album",
+      "pop",
+      "upnp",
+      { "a":"b" },
+      {"a":{
+        "variant": "int16",
+        "value":4
+      }
+	  },
+      {
+        "variant": "string",
+        "value":"\u0000"
+      }
+    ],
+[
+      "http://192.168.81.100:8200/MediaItems/4670.mp3",
+      "song2",
+      "artist2",
+      "http://192.168.81.100:8200/MediaItems/7845.jpg",
+      1234,
+      "album",
+      "pop",
+      "upnp",
+      {"a":"b"
+      },
+      {"a":{
+        "variant": "int32",
+        "value":4
+      }
+      },
+      {
+        "variant": "string",
+        "value":"\u0000"
+      }
+    ]
+
+  ],
+  "index_TypeDef": "Int32",
+  "index": 1,
+  "controllerType_TypeDef": "String",
+  "controllerType": "MyController",
+  "playlistUserData_TypeDef": "String",
+  "playlistUserData": "upnp"
+}
