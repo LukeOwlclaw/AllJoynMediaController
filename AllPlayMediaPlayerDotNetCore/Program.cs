@@ -18,10 +18,10 @@ namespace AllPlayMediaPlayerDotNetCore
         private static void Main(string[] args)
         {
             // Ignore spelling: Multicast 
-            
+
             int bufferLength = 1024;
             int opCount = 10;
-            
+
 
             Console.WriteLine("Hello World!");
             mcastEndpoint = new MulticastEndpoint();
@@ -40,34 +40,8 @@ namespace AllPlayMediaPlayerDotNetCore
             mcastEndpoint.Create(port, bufferLength);
             //mcastEndpoint.mcastSocket.SendTo(writer2.Packets.First().Array, destinationPoint);
 
-
-            IPAddress serverAddr = IPAddress.Parse("192.168.81.255");
-            IPEndPoint endPoint = new IPEndPoint(serverAddr, 11000);
-            string text = "Hello1";
-            byte[] send_buffer = System.Text.Encoding.ASCII.GetBytes(text);
-            for (int i = 0; i < 100; i++)
-            {
-                var writer3 = new Tmds.MDns.DnsMessageWriter();
-                writer3.WriteQueryHeader(0x1235, new DnsMessageWriter.ResponseFlags {
-                    Type = DnsMessageWriter.ResponseFlags.MessageType.Response,
-                });
-                string domainname = string.Concat(Enumerable.Repeat("a", 32));
-                domainname = "AWESOME-ALLPLAY-PLAYER";
-                // domain name must have length 32 !!
-                writer3.WritePtrRecord(RecordSection.Answer, new Name("_alljoyn._tcp.local"), domainname, 120);
-                //writer3.WriteRecordStart(RecordSection.Answer, new Name("_alljoyn._tcp.local"), RecordType.PTR, 120, domainname, RecordClass.Internet);
-                writer3.WriteSrvRecord(RecordSection.Answer, 120, srvNameOffset: 0x2B, srvPriority: 1, srvWeigth: 1, srvPort: 9955,
-                    srcTargetName: "ABCDEFABCDEF", srvTargetNamePtrOffset: 0x1A);
-               //writer3.WriteRecordEnd();
-
-                foreach (ArraySegment<byte> segment in writer3.Packets)
-                {
-                    mcastEndpoint.mcastSocket.SendTo(segment.Array, segment.Offset, segment.Count, SocketFlags.None, endPoint);
-                }
-
-                
-
-            }
+            Receive();
+            //Send();
 
             //Socket sock = new Socket(AddressFamily.InterNetwork, SocketType.Dgram,ProtocolType.Udp);
             //IPAddress serverAddr = IPAddress.Parse("192.168.81.255");
@@ -82,8 +56,60 @@ namespace AllPlayMediaPlayerDotNetCore
             //}
 
 
-           
-            return;
+
+        }
+
+        private static void Send()
+        {
+            IPAddress serverAddr = IPAddress.Parse("192.168.81.255");
+            IPEndPoint endPoint = new IPEndPoint(serverAddr, 11000);
+            string text = "Hello1";
+            byte[] send_buffer = System.Text.Encoding.ASCII.GetBytes(text);
+            for (int i = 0; i < 100; i++)
+            {
+                var writer3 = new Tmds.MDns.DnsMessageWriter();
+                writer3.WriteQueryHeader(0x1235, new DnsMessageWriter.ResponseFlags
+                {
+                    Type = DnsMessageWriter.ResponseFlags.MessageType.Response,
+                });
+                string domainname = string.Concat(Enumerable.Repeat("a", 32));
+                domainname = "AWESOME-ALLPLAY-PLAYER";
+                // domain name must have length 32 !!
+                writer3.WritePtrRecord(RecordSection.Answer, new Name("_alljoyn._tcp.local"), domainname, 120);
+                //writer3.WriteRecordStart(RecordSection.Answer, new Name("_alljoyn._tcp.local"), RecordType.PTR, 120, domainname, RecordClass.Internet);
+                writer3.WriteSrvRecord(RecordSection.Answer, 120, srvNameOffset: 0x2B, srvPriority: 1, srvWeigth: 1, srvPort: 9955,
+                    srcTargetName: domainname, srvTargetNamePtrOffset: 0x1A);
+
+                writer3.WriteTxtRecord(RecordSection.Answer, 120, srvNameOffset: 0x2B, srvPriority: 1, srvWeigth: 1, srvPort: 9955,
+                    texts: new string[] { "txtvers=0" }, srvTargetNamePtrOffset: 0x1A);
+
+                writer3.WriteTxtRecord(RecordSection.Additional, 120, srvNameOffset: 0x56, srvPriority: 1, srvWeigth: 1, srvPort: 9955,
+                   texts: new string[] { "txtvers=0", "t_1=4", "n_2=org.alljoyn.Notification.sl.yK_W0-Y6i.xA" },
+                   srvTargetNamePtrOffset: 0x1A, namePrefix: "advertise");
+
+                writer3.WriteTxtRecord(RecordSection.Additional, 120, srvNameOffset: 0x56, srvPriority: 1, srvWeigth: 1, srvPort: 9955,
+                   texts: new string[] { "txtvers=0", "ajpv=12", "pv=2", "sid=337", "upcv4=49037" },
+                   srvTargetNamePtrOffset: 0x1A, namePrefix: "sender-info");
+
+
+                //writer3.WriteRecordEnd();
+
+                foreach (ArraySegment<byte> segment in writer3.Packets)
+                {
+                    mcastEndpoint.mcastSocket.SendTo(segment.Array, segment.Offset, segment.Count, SocketFlags.None, endPoint);
+                }
+
+
+
+            }
+        }
+
+        private static void Receive() {
+
+
+
+            int bufferLength = 1024;
+            int opCount = int.MaxValue;
 
             try
             {
@@ -98,10 +124,13 @@ namespace AllPlayMediaPlayerDotNetCore
                     {
                         rc = mcastEndpoint.mcastSocket.ReceiveFrom(mcastEndpoint.dataBuffer, ref castSenderEndPoint);
 
-                        var sendAnswer = IsAllJoynQuery(mcastEndpoint.dataBuffer);
                         
-                        Console.WriteLine("Multicast ReceiveFrom() is OK...");
+                        var sendAnswer = IsAllJoynQuery(mcastEndpoint.dataBuffer, out string queryType);
+
                         senderEndPoint = (IPEndPoint)castSenderEndPoint;
+                        var query = sendAnswer ? "AllJoyn query" : "query";
+                        Console.WriteLine($"{i:D2} Received {query} from {senderEndPoint} ({queryType})");
+
                         //Console.WriteLine("Received {0} bytes from {1}: '{2}'",
                         //    rc,
                         //    senderEndPoint.ToString(),
@@ -110,6 +139,8 @@ namespace AllPlayMediaPlayerDotNetCore
 
                         if (sendAnswer)
                         {
+                            //Send();
+                            continue;
                             Console.WriteLine($"Receive AllJoyn query from {senderEndPoint}");
                             var writer = new Tmds.MDns.DnsMessageWriter();
                             writer.WriteRecordStart(RecordSection.Answer, new Name("XYZ"), RecordType.TXT, 10);
@@ -142,10 +173,12 @@ namespace AllPlayMediaPlayerDotNetCore
                 }
                 mcastEndpoint = null;
             }
+
         }
 
-        private static bool IsAllJoynQuery(byte[] dataBuffer)
+        private static bool IsAllJoynQuery(byte[] dataBuffer, out string queryType)
         {
+            queryType = "";
             try
             {
                 DnsMessageReader reader = new DnsMessageReader(new MemoryStream(dataBuffer));
@@ -159,6 +192,7 @@ namespace AllPlayMediaPlayerDotNetCore
                         Question question = reader.ReadQuestion();
                         Name serviceName = question.QName;
 
+                        queryType = question.QType + ":" + serviceName.ToString();
                         // _alljoyn._tcp
                         if (serviceName.Equals("_alljoyn._tcp.local."))
                         {
@@ -167,7 +201,15 @@ namespace AllPlayMediaPlayerDotNetCore
                         }
                     }
                 }
-                
+                else if (header.IsQuery)
+                {
+                    Question question = reader.ReadQuestion();
+                    Name serviceName = question.QName;
+
+                    queryType = question.QType + ":" + serviceName.ToString();
+                }
+
+
             }
             catch
             {
