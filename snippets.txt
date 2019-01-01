@@ -13,7 +13,7 @@ GetRange
 Add
 {
   "snapshotId_TypeDef": "String",
-  "snapshotId": "c2a2de793db9c19d66dc1863cafb3c7f6cbe714572531e354309fe0220b7e729",
+  "snapshotId": "37a9ab978ce3f1eabeb63cee03dc75afae157bbd6d8fb54670096ce194354c3f",
   "position_TypeDef": "Int32",
   "position": 0,
   "items_TypeDef": "StructArray(Fields:[11]String,String,String,String,Int64,String,String,String,Dictionary(String->String),Dictionary(String->Variant),Variant)",
@@ -37,12 +37,13 @@ Add
   ]
 }
 
+"http://192.168.81.100:8200/MediaItems/2075.mp3",
 UpdatePlaylist
 {
   "items_TypeDef": "StructArray(Fields:[11]String,String,String,String,Int64,String,String,String,Dictionary(String->String),Dictionary(String->Variant),Variant)",
   "items": [
     [
-      "http://192.168.81.100:8200/MediaItems/2075.mp3",
+      "http://gb25.streamgates.net/radios-audio/100Covers/icecast.audio",
       "Amy Macdonald - Slow It Down",
       "\u0000",
       "\u0000",
@@ -66,8 +67,8 @@ UpdatePlaylist
   "playlistItems_TypeDef": "StructArray(Fields:[11]String,String,String,String,Int64,String,String,String,Dictionary(String->String),Dictionary(String->Variant),Variant)",
   "playlistItems": [
     [
-      "http://192.168.81.100:8200/MediaItems/4670.mp3",
-      "song1",
+      "http://gb25.streamgates.net/radios-audio/100Covers/icecast.audio",
+      "PRESET SOURCE",
       "artist1",
       "http://192.168.81.100:8200/MediaItems/7845.jpg",
       123,
@@ -115,3 +116,45 @@ UpdatePlaylist
   "playlistUserData_TypeDef": "String",
   "playlistUserData": "upnp"
 }
+
+UpdatePlaylist (works!)
+{
+  "playlistItems_TypeDef": "StructArray(Fields:[11]String,String,String,String,Int64,String,String,String,Dictionary(String->String),Dictionary(String->Variant),Variant)",
+  "playlistItems": [
+ [
+"http://gb25.streamgates.net/radios-audio/100Covers/icecast.audio",
+      "song1",
+      "artist1",
+      "http://192.168.81.100:8200/MediaItems/7845.jpg",
+      123,
+      "audio",
+      "pop",
+      "upnp",
+      {},
+      {},
+      {
+        "variant": "string",
+        "value":" "
+      }
+    ]  ],
+  "index_TypeDef": "Int32",
+  "index": 0,
+  "controllerType_TypeDef": "String",
+  "controllerType": "string",
+  "playlistUserData_TypeDef": "String",
+  "playlistUserData": "string"
+}
+
+Playlist 
+Station 1:
+"http://192.168.81.100/music",
+Station 3:
+"http://stream.srg-ssr.ch/m/rsp/mp3_128",
+Station 4:
+"http://88.198.118.60:8073/stream",
+Station 5:
+"http://gb25.streamgates.net/radios-audio/100Covers/icecast.audio",
+same as?: http://digital.100fm.co.il/stream2/100Covers
+
+Station 6:
+"http://sex-high.rautemusik.fm/stream.mp3?ref=tunein",

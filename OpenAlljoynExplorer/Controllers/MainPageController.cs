@@ -42,7 +42,7 @@ namespace OpenAlljoynExplorer.Controllers
             //{
             if (args != null)
             {
-                ReleaseServiceComObject(args.Service);
+                //ReleaseServiceComObject(args.Service);
             }
             //});
 

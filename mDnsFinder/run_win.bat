@@ -1,0 +1,1 @@
+bin\Release\netcoreapp2.0\win10-x64\mdnsfinder.exe

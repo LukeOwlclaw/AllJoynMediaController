@@ -139,7 +139,7 @@ namespace AllPlayMediaPlayerDotNetCore
 
                         if (sendAnswer)
                         {
-                            //Send();
+                            Send();
                             continue;
                             Console.WriteLine($"Receive AllJoyn query from {senderEndPoint}");
                             var writer = new Tmds.MDns.DnsMessageWriter();
